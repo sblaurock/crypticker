@@ -11,26 +11,56 @@ const connection = new autobahn.Connection({
 });
 
 const writeToStdout = (prices) => {
+  let usdOutput;
+  let btcOutput;
+
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
-  process.stdout.write(' › Poloniex'.bold.white + '\tETH'.white + colors.white(`\t${prices.poloniex.usd} USD\t${prices.poloniex.btc} BTC`));
+
+  // ETH / USD
+  if (prices.poloniex.change.usd > 0) {
+    usdOutput = `${prices.poloniex.current.usd} USD ` + colors.green(`▲ ${prices.poloniex.change.usd}%`);
+  } else if (prices.poloniex.change.usd < 0) {
+    usdOutput = `${prices.poloniex.current.usd} USD ` + colors.red(`▼ {prices.poloniex.change.usd}%`);
+  } else {
+    usdOutput = `${prices.poloniex.current.usd} USD ` + `${prices.poloniex.change.usd}%`;
+  }
+
+  // ETH / BTC
+  if (prices.poloniex.change.btc > 0) {
+    btcOutput = `${prices.poloniex.current.btc} BTC ` + colors.green(`▲ ${prices.poloniex.change.btc}%`);
+  } else if (prices.poloniex.change.btc < 0) {
+    btcOutput = `${prices.poloniex.current.btc} BTC ` + colors.red(`▼ {prices.poloniex.change.btc}%`);
+  } else {
+    btcOutput = `${prices.poloniex.current.btc} BTC ` + `${prices.poloniex.change.btc}%`;
+  }
+
+  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t '.white + usdOutput + '\t' + btcOutput);
 };
 
 connection.onopen = (session) => {
   const prices = {
     poloniex: {
-      usd: '0.00',
-      btc: '0.0000'
+      current: {
+        usd: '00.00',
+        btc: '0.0000'
+      },
+      change: {
+        usd: '0.00',
+        btc: '0.0000'
+      }
     }
   };
 
   session.subscribe('ticker', (data) => {
     if (data[0] === 'USDT_ETH') {
-      prices.poloniex.usd = (+data[1]).toFixed(2);
+      prices.poloniex.current.usd = (+data[1]).toFixed(2);
+      prices.poloniex.change.usd = (+data[4]).toFixed(2);
     }
 
     if (data[0] === 'BTC_ETH') {
-      prices.poloniex.btc = (+data[1]).toFixed(4);
+      prices.poloniex.current.btc = (+data[1]).toFixed(4);
+      prices.poloniex.change.btc = (+data[4]).toFixed(2);
     }
 
     writeToStdout(prices);

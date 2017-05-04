@@ -56,7 +56,7 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +prices.poloniex.eth.current.usd && exchanges.ethUsd.updated + options.history.minimumDelay < (+ new Date())) {
+    if (options.history.enabled && +(prices.poloniex.eth.current.usd.replace(',', '')) && exchanges.ethUsd.updated + options.history.minimumDelay < (+ new Date())) {
       prices.poloniex.eth.current.usd > exchanges.ethUsd.previous ? exchanges.ethUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethUsd.history.push(colors.red(options.history.negativeSymbol));
       exchanges.ethUsd.updated = (+ new Date());
     }
@@ -75,7 +75,7 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +prices.poloniex.eth.current.btc && exchanges.ethBtc.updated + options.history.minimumDelay < (+ new Date())) {
+    if (options.history.enabled && +(prices.poloniex.eth.current.btc.replace(',', '')) && exchanges.ethBtc.updated + options.history.minimumDelay < (+ new Date())) {
       prices.poloniex.eth.current.btc > exchanges.ethBtc.previous ? exchanges.ethBtc.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethBtc.history.push(colors.red(options.history.negativeSymbol));
       exchanges.ethBtc.updated = (+ new Date());
     }
@@ -94,7 +94,7 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +prices.poloniex.btc.current.usd && exchanges.btcUsd.updated + options.history.minimumDelay < (+ new Date())) {
+    if (options.history.enabled && +(prices.poloniex.btc.current.usd.replace(',', '')) && exchanges.btcUsd.updated + options.history.minimumDelay < (+ new Date())) {
       prices.poloniex.btc.current.usd > exchanges.btcUsd.previous ? exchanges.btcUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.btcUsd.history.push(colors.red(options.history.negativeSymbol));
       exchanges.btcUsd.updated = (+ new Date());
     }

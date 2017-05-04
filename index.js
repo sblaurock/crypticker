@@ -10,15 +10,30 @@ const connection = new autobahn.Connection({
   realm: 'realm1'
 });
 
+const writeToStdout = (prices) => {
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write(' › Poloniex'.bold.white + '\tETH'.white + colors.white(`\t${prices.poloniex.usd} USD\t${prices.poloniex.btc} BTC`));
+};
+
 connection.onopen = (session) => {
+  const prices = {
+    poloniex: {
+      usd: '0.00',
+      btc: '0.0000'
+    }
+  };
+
   session.subscribe('ticker', (data) => {
     if (data[0] === 'USDT_ETH') {
-      const price = (+ data[1]).toFixed(2);
-
-      process.stdout.clearLine();
-      process.stdout.cursorTo(0);
-      process.stdout.write(' › Poloniex'.white + '\tETH'.white + colors.white(`\t${price} USD`));
+      prices.poloniex.usd = (+data[1]).toFixed(2);
     }
+
+    if (data[0] === 'BTC_ETH') {
+      prices.poloniex.btc = (+data[1]).toFixed(4);
+    }
+
+    writeToStdout(prices);
   });
 }
 

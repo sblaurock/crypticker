@@ -9,7 +9,7 @@ const options = {
     length: 20,
     positiveSymbol: '➚',
     negativeSymbol: '➘',
-    minimumDelay: 5 * 1000 // 5 seconds
+    minimumDelay: 2 * 60 * 1000 // 2 minutes
   }
 };
 

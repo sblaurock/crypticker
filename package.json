@@ -19,6 +19,7 @@
   "homepage": "https://github.com/sblaurock/coin-ticker#readme",
   "dependencies": {
     "autobahn": "^17.5.1",
-    "colors": "^1.1.2"
+    "colors": "^1.1.2",
+    "left-pad": "^1.1.3"
   }
 }

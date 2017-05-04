@@ -5,8 +5,9 @@ const leftPad = require('left-pad');
 const options = {
   url: 'wss://api.poloniex.com',
   historyLength: 20,
-  historyPositiveSymbol: '+',
-  historyNegativeSymbol: '-',
+  historyPositiveSymbol: '➚',
+  historyNegativeSymbol: '➘',
+  historyMinimumDelay: 5 * 1000 // 5 seconds
 };
 
 const connection = new autobahn.Connection({
@@ -14,15 +15,26 @@ const connection = new autobahn.Connection({
   realm: 'realm1'
 });
 
-const ethUsdHistory = [];
-const ethBtcHistory = [];
-const btcUsdHistory = [];
-let ethUsdOutput = '';
-let ethBtcOutput = '';
-let btcUsdOutput = '';
-let ethUsdPrevious = false;
-let ethBtcPrevious = false;
-let btcUsdPrevious = false;
+const exchanges = {
+  ethUsd: {
+    history: [],
+    output: '',
+    previous: 0,
+    updated: 0
+  },
+  ethBtc: {
+    history: [],
+    output: '',
+    previous: 0,
+    updated: 0
+  },
+  btcUsd: {
+    history: [],
+    output: '',
+    previous: 0,
+    updated: 0
+  }
+};
 
 const writeToStdout = (prices) => {
   process.stdout.moveCursor(0, -5);
@@ -31,48 +43,63 @@ const writeToStdout = (prices) => {
   process.stdout.write('\n');
 
   // ETH / USD
-  if (prices.poloniex.eth.current.usd !== ethUsdPrevious) {
+  if (prices.poloniex.eth.current.usd !== exchanges.ethUsd.previous) {
     if (prices.poloniex.eth.change.usd > 0) {
-      ethUsdOutput = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.eth.change.usd}%`);
+      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.eth.change.usd}%`);
     } else if (prices.poloniex.eth.change.usd < 0) {
-      ethUsdOutput = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.eth.change.usd}%`);
+      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.eth.change.usd}%`);
     } else {
-      ethUsdOutput = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + `- ${prices.poloniex.eth.change.usd}%`;
+      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + `- ${prices.poloniex.eth.change.usd}%`;
     }
 
-    prices.poloniex.eth.current.usd > ethUsdPrevious ? ethUsdHistory.push(colors.green(options.historyPositiveSymbol)) : ethUsdHistory.push(colors.red(options.historyNegativeSymbol));
-    ethUsdPrevious = prices.poloniex.eth.current.usd;
+    // Ensure updates cannot happen faster than `n` seconds
+    if (prices.poloniex.eth.current.usd && exchanges.ethUsd.updated + options.historyMinimumDelay < (+ new Date())) {
+      prices.poloniex.eth.current.usd > exchanges.ethUsd.previous ? exchanges.ethUsd.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.ethUsd.history.push(colors.red(options.historyNegativeSymbol));
+      exchanges.ethUsd.updated = (+ new Date());
+    }
+
+    exchanges.ethUsd.previous = prices.poloniex.eth.current.usd;
   }
 
   // ETH / BTC
-  if (prices.poloniex.eth.current.btc !== ethBtcPrevious) {
+  if (prices.poloniex.eth.current.btc !== exchanges.ethBtc.previous) {
     if (prices.poloniex.eth.change.btc > 0) {
-      ethBtcOutput = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
+      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     } else if (prices.poloniex.eth.change.btc < 0) {
-      ethBtcOutput = `           \t   \t {leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
+      exchanges.ethBtc.output = `           \t   \t {leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     } else {
-      ethBtcOutput = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
+      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     }
 
-    prices.poloniex.eth.current.btc > ethBtcPrevious ? ethBtcHistory.push(colors.green(options.historyPositiveSymbol)) : ethBtcHistory.push(colors.red(options.historyNegativeSymbol));
-    ethBtcPrevious = prices.poloniex.eth.current.btc;
+    // Ensure updates cannot happen faster than `n` seconds
+    if (prices.poloniex.eth.current.btc && exchanges.ethBtc.updated + options.historyMinimumDelay < (+ new Date())) {
+      prices.poloniex.eth.current.btc > exchanges.ethBtc.previous ? exchanges.ethBtc.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.ethBtc.history.push(colors.red(options.historyNegativeSymbol));
+      exchanges.ethBtc.updated = (+ new Date());
+    }
+
+    exchanges.ethBtc.previous = prices.poloniex.eth.current.btc;
   }
 
   // BTC / USD
-  if (prices.poloniex.btc.current.usd !== btcUsdPrevious) {
+  if (prices.poloniex.btc.current.usd !== exchanges.btcUsd.previous) {
     if (prices.poloniex.btc.change.usd > 0) {
-      btcUsdOutput = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.btc.change.usd}%`);
+      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.btc.change.usd}%`);
     } else if (prices.poloniex.btc.change.usd < 0) {
-      btcUsdOutput = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.btc.change.usd}%`);
+      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.btc.change.usd}%`);
     } else {
-      btcUsdOutput = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + `- ${prices.btc.poloniex.btc.change.usd}%`;
+      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + `- ${prices.btc.poloniex.btc.change.usd}%`;
     }
 
-    prices.poloniex.btc.current.usd > btcUsdPrevious ? btcUsdHistory.push(colors.green(options.historyPositiveSymbol)) : btcUsdHistory.push(colors.red(options.historyNegativeSymbol));
-    btcUsdPrevious = prices.poloniex.btc.current.usd;
+    // Ensure updates cannot happen faster than `n` seconds
+    if (prices.poloniex.btc.current.usd && exchanges.btcUsd.updated + options.historyMinimumDelay < (+ new Date())) {
+      prices.poloniex.btc.current.usd > exchanges.btcUsd.previous ? exchanges.btcUsd.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.btcUsd.history.push(colors.red(options.historyNegativeSymbol));
+      exchanges.btcUsd.updated = (+ new Date());
+    }
+
+    exchanges.btcUsd.previous = prices.poloniex.btc.current.usd;
   }
 
-  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + ethUsdOutput + '\t' + ethUsdHistory.slice(options.historyLength * -1).join('') + '\n' + ethBtcOutput + ' ' + ethBtcHistory.slice(options.historyLength * -1).join('') + '\n\n           \tBTC\t ' + btcUsdOutput + '\t' + btcUsdHistory.slice(options.historyLength * -1).join('') + '\n');
+  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + exchanges.ethUsd.output + '\t' + exchanges.ethUsd.history.slice(options.historyLength * -1).join('') + '\n' + exchanges.ethBtc.output + ' ' + exchanges.ethBtc.history.slice(options.historyLength * -1).join('') + '\n\n           \tBTC\t ' + exchanges.btcUsd.output + '\t' + exchanges.btcUsd.history.slice(options.historyLength * -1).join('') + '\n');
 };
 
 process.stdout.write('\n');

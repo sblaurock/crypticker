@@ -4,10 +4,13 @@ const leftPad = require('left-pad');
 
 const options = {
   url: 'wss://api.poloniex.com',
-  historyLength: 20,
-  historyPositiveSymbol: '➚',
-  historyNegativeSymbol: '➘',
-  historyMinimumDelay: 5 * 1000 // 5 seconds
+  history: {
+    enabled: true,
+    length: 20,
+    positiveSymbol: '➚',
+    negativeSymbol: '➘',
+    minimumDelay: 5 * 1000 // 5 seconds
+  }
 };
 
 const connection = new autobahn.Connection({
@@ -53,8 +56,8 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (prices.poloniex.eth.current.usd && exchanges.ethUsd.updated + options.historyMinimumDelay < (+ new Date())) {
-      prices.poloniex.eth.current.usd > exchanges.ethUsd.previous ? exchanges.ethUsd.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.ethUsd.history.push(colors.red(options.historyNegativeSymbol));
+    if (options.history.enabled && +prices.poloniex.eth.current.usd && exchanges.ethUsd.updated + options.history.minimumDelay < (+ new Date())) {
+      prices.poloniex.eth.current.usd > exchanges.ethUsd.previous ? exchanges.ethUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethUsd.history.push(colors.red(options.history.negativeSymbol));
       exchanges.ethUsd.updated = (+ new Date());
     }
 
@@ -72,8 +75,8 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (prices.poloniex.eth.current.btc && exchanges.ethBtc.updated + options.historyMinimumDelay < (+ new Date())) {
-      prices.poloniex.eth.current.btc > exchanges.ethBtc.previous ? exchanges.ethBtc.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.ethBtc.history.push(colors.red(options.historyNegativeSymbol));
+    if (options.history.enabled && +prices.poloniex.eth.current.btc && exchanges.ethBtc.updated + options.history.minimumDelay < (+ new Date())) {
+      prices.poloniex.eth.current.btc > exchanges.ethBtc.previous ? exchanges.ethBtc.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethBtc.history.push(colors.red(options.history.negativeSymbol));
       exchanges.ethBtc.updated = (+ new Date());
     }
 
@@ -91,15 +94,15 @@ const writeToStdout = (prices) => {
     }
 
     // Ensure updates cannot happen faster than `n` seconds
-    if (prices.poloniex.btc.current.usd && exchanges.btcUsd.updated + options.historyMinimumDelay < (+ new Date())) {
-      prices.poloniex.btc.current.usd > exchanges.btcUsd.previous ? exchanges.btcUsd.history.push(colors.green(options.historyPositiveSymbol)) : exchanges.btcUsd.history.push(colors.red(options.historyNegativeSymbol));
+    if (options.history.enabled && +prices.poloniex.btc.current.usd && exchanges.btcUsd.updated + options.history.minimumDelay < (+ new Date())) {
+      prices.poloniex.btc.current.usd > exchanges.btcUsd.previous ? exchanges.btcUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.btcUsd.history.push(colors.red(options.history.negativeSymbol));
       exchanges.btcUsd.updated = (+ new Date());
     }
 
     exchanges.btcUsd.previous = prices.poloniex.btc.current.usd;
   }
 
-  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + exchanges.ethUsd.output + '\t' + exchanges.ethUsd.history.slice(options.historyLength * -1).join('') + '\n' + exchanges.ethBtc.output + ' ' + exchanges.ethBtc.history.slice(options.historyLength * -1).join('') + '\n\n           \tBTC\t ' + exchanges.btcUsd.output + '\t' + exchanges.btcUsd.history.slice(options.historyLength * -1).join('') + '\n');
+  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + exchanges.ethUsd.output + '\t' + exchanges.ethUsd.history.slice(options.history.length * -1).join('') + '\n' + exchanges.ethBtc.output + ' ' + exchanges.ethBtc.history.slice(options.history.length * -1).join('') + '\n\n           \tBTC\t ' + exchanges.btcUsd.output + '\t' + exchanges.btcUsd.history.slice(options.history.length * -1).join('') + '\n');
 };
 
 process.stdout.write('\n');

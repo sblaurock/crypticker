@@ -11,56 +11,85 @@ const connection = new autobahn.Connection({
 });
 
 const writeToStdout = (prices) => {
-  let usdOutput;
-  let btcOutput;
+  let ethUsdOuptup;
+  let ethBtcOutput;
+  let btcUsdOutput;
 
-  process.stdout.clearLine();
+  process.stdout.moveCursor(0, -5);
   process.stdout.cursorTo(0);
+  process.stdout.clearScreenDown();
+  process.stdout.write('\n');
 
   // ETH / USD
-  if (prices.poloniex.change.usd > 0) {
-    usdOutput = `${prices.poloniex.current.usd} USD ` + colors.green(`▲ ${prices.poloniex.change.usd}%`);
-  } else if (prices.poloniex.change.usd < 0) {
-    usdOutput = `${prices.poloniex.current.usd} USD ` + colors.red(`▼ {prices.poloniex.change.usd}%`);
+  if (prices.poloniex.eth.change.usd > 0) {
+    ethUsdOutput = `${prices.poloniex.eth.current.usd} USD ` + colors.green(`\t▲ ${prices.poloniex.eth.change.usd}%`);
+  } else if (prices.poloniex.eth.change.usd < 0) {
+    ethUsdOutput = `${prices.poloniex.eth.current.usd} USD ` + colors.red(`\t▼ {prices.poloniex.eth.change.usd}%`);
   } else {
-    usdOutput = `${prices.poloniex.current.usd} USD ` + `${prices.poloniex.change.usd}%`;
+    ethUsdOutput = `${prices.poloniex.eth.current.usd} USD ` + `\t- ${prices.poloniex.eth.change.usd}%`;
   }
 
   // ETH / BTC
-  if (prices.poloniex.change.btc > 0) {
-    btcOutput = `${prices.poloniex.current.btc} BTC ` + colors.green(`▲ ${prices.poloniex.change.btc}%`);
-  } else if (prices.poloniex.change.btc < 0) {
-    btcOutput = `${prices.poloniex.current.btc} BTC ` + colors.red(`▼ {prices.poloniex.change.btc}%`);
+  if (prices.poloniex.eth.change.btc > 0) {
+    ethBtcOutput = `\t\t\t${prices.poloniex.eth.current.btc} BTC ` + colors.green(`\t▲ ${prices.poloniex.eth.change.btc}%`);
+  } else if (prices.poloniex.eth.change.btc < 0) {
+    ethBtcOutput = `\t\t\t${prices.poloniex.eth.current.btc} BTC ` + colors.red(`\t▼ {prices.poloniex.eth.change.btc}%`);
   } else {
-    btcOutput = `${prices.poloniex.current.btc} BTC ` + `${prices.poloniex.change.btc}%`;
+    ethBtcOutput = `\t\t\t${prices.poloniex.eth.current.btc} BTC ` + `\t- ${prices.poloniex.eth.change.btc}%`;
   }
 
-  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t '.white + usdOutput + '\t' + btcOutput);
+  // BTC / USD
+  if (prices.poloniex.btc.change.usd > 0) {
+    btcUsdOutput = `${prices.poloniex.btc.current.usd} USD ` + colors.green(`\t▲ ${prices.poloniex.btc.change.usd}%`);
+  } else if (prices.poloniex.btc.change.usd < 0) {
+    btcUsdOutput = `${prices.poloniex.btc.current.usd} USD ` + colors.red(`\t▼ {prices.poloniex.btc.change.usd}%`);
+  } else {
+    btcUsdOutput = `${prices.poloniex.btc.current.usd} USD ` + `\t- ${prices.btc.poloniex.btc.change.usd}%`;
+  }
+
+  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + ethUsdOutput + '\n' + ethBtcOutput + '\n\n\t\tBTC\t' + btcUsdOutput);
 };
+
+process.stdout.write('\n');
 
 connection.onopen = (session) => {
   const prices = {
     poloniex: {
-      current: {
-        usd: '00.00',
-        btc: '0.0000'
+      eth: {
+        current: {
+          usd: '00.00',
+          btc: '0.0000'
+        },
+        change: {
+          usd: '0.00',
+          btc: '0.0000'
+        }
       },
-      change: {
-        usd: '0.00',
-        btc: '0.0000'
+      btc: {
+        current: {
+          usd: '0000.00'
+        },
+        change: {
+          usd: '0.00'
+        }
       }
     }
   };
 
   session.subscribe('ticker', (data) => {
     if (data[0] === 'USDT_ETH') {
-      prices.poloniex.current.usd = (+data[1]).toFixed(2);
-      prices.poloniex.change.usd = (+data[4]).toFixed(2);
+      prices.poloniex.eth.current.usd = (+data[1]).toFixed(2);
+      prices.poloniex.eth.change.usd = (+data[4]).toFixed(2);
     }
 
     if (data[0] === 'BTC_ETH') {
-      prices.poloniex.current.btc = (+data[1]).toFixed(4);
-      prices.poloniex.change.btc = (+data[4]).toFixed(2);
+      prices.poloniex.eth.current.btc = (+data[1]).toFixed(4);
+      prices.poloniex.eth.change.btc = (+data[4]).toFixed(2);
+    }
+
+    if (data[0] === 'USDT_BTC') {
+      prices.poloniex.btc.current.usd = (+data[1]).toFixed(2);
+      prices.poloniex.btc.change.usd = (+data[4]).toFixed(2);
     }
 
     writeToStdout(prices);

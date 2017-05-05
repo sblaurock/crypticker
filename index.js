@@ -50,7 +50,7 @@ const writeToStdout = (prices) => {
     if (prices.poloniex.eth.change.usd > 0) {
       exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.eth.change.usd}%`);
     } else if (prices.poloniex.eth.change.usd < 0) {
-      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.eth.change.usd}%`);
+      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.red(`▼ ${prices.poloniex.eth.change.usd}%`);
     } else {
       exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + `- ${prices.poloniex.eth.change.usd}%`;
     }
@@ -69,7 +69,7 @@ const writeToStdout = (prices) => {
     if (prices.poloniex.eth.change.btc > 0) {
       exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     } else if (prices.poloniex.eth.change.btc < 0) {
-      exchanges.ethBtc.output = `           \t   \t {leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
+      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     } else {
       exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
     }
@@ -88,7 +88,7 @@ const writeToStdout = (prices) => {
     if (prices.poloniex.btc.change.usd > 0) {
       exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.btc.change.usd}%`);
     } else if (prices.poloniex.btc.change.usd < 0) {
-      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.red(`▼ {prices.poloniex.btc.change.usd}%`);
+      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.red(`▼ ${prices.poloniex.btc.change.usd}%`);
     } else {
       exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + `- ${prices.btc.poloniex.btc.change.usd}%`;
     }

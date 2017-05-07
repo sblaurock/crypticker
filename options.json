@@ -12,8 +12,6 @@
   },
   "markets": [
     "coinbase/btcusd",
-    "coinbase/ethusd",
-    "poloniex/ethusd",
-    "bitfinex/ethusd"
+    "coinbase/ethusd"
   ]
 }

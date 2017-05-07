@@ -107,6 +107,7 @@ const writeToStdout = (priceData) => {
     process.stdout.write('\n');
   });
 
+  previousExchange = null;
   previousPriceData = priceData;
 };
 

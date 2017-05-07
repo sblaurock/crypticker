@@ -1,0 +1,16 @@
+{
+  "app": {
+    "pollInterval": 5000,
+    "history": {
+      "enabled": true,
+      "length": 20,
+      "positiveSymbol": "➚",
+      "negativeSymbol": "➘"
+    }
+  },
+  "markets": [
+    "coinbase/btcusd",
+    "coinbase/ethusd",
+    "coinbase/ethbtc"
+  ]
+}

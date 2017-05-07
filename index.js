@@ -1,22 +1,8 @@
-const autobahn = require('autobahn');
 const colors = require('colors');
 const leftPad = require('left-pad');
-
-const options = {
-  url: 'wss://api.poloniex.com',
-  history: {
-    enabled: true,
-    length: 20,
-    positiveSymbol: '➚',
-    negativeSymbol: '➘',
-    minimumDelay: 2 * 60 * 1000 // 2 minutes
-  }
-};
-
-const connection = new autobahn.Connection({
-  url: options.url,
-  realm: 'realm1'
-});
+const needle = require('needle');
+const _ = require('lodash');
+const options = require('./options.json');
 
 const exchanges = {
   ethUsd: {
@@ -39,120 +25,110 @@ const exchanges = {
   }
 };
 
-const writeToStdout = (prices) => {
-  process.stdout.moveCursor(0, -5);
+// Convert string to titlecase
+const toTitleCase = (string) => {
+  return string.replace(/\w\S*/g, (text) => {
+    return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
+  });
+};
+
+// Write display to STDOUT
+const writeToStdout = (priceData) => {
+  const sortedExchanges = _.keys(priceData).sort();
+
+  process.stdout.moveCursor(0, -4);
   process.stdout.cursorTo(0);
   process.stdout.clearScreenDown();
   process.stdout.write('\n');
 
-  // ETH / USD
-  if (prices.poloniex.eth.current.usd !== exchanges.ethUsd.previous) {
-    if (prices.poloniex.eth.change.usd > 0) {
-      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.eth.change.usd}%`);
-    } else if (prices.poloniex.eth.change.usd < 0) {
-      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + colors.red(`▼ ${prices.poloniex.eth.change.usd}%`);
-    } else {
-      exchanges.ethUsd.output = `${leftPad(prices.poloniex.eth.current.usd, 8)} USD ` + `- ${prices.poloniex.eth.change.usd}%`;
-    }
+  _.forEach(sortedExchanges, (exchange) => {
+    const sortedMarkets = _.keys(priceData[exchange]).sort();
 
-    // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +(prices.poloniex.eth.current.usd.replace(',', '')) && exchanges.ethUsd.updated + options.history.minimumDelay < (+ new Date())) {
-      prices.poloniex.eth.current.usd > exchanges.ethUsd.previous ? exchanges.ethUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethUsd.history.push(colors.red(options.history.negativeSymbol));
-      exchanges.ethUsd.updated = (+ new Date());
-    }
+    _.forEach(sortedMarkets, (market) => {
+      const currencyA = market.substr(0, 3);
+      const currencyB = market.substr(3, 3);
+      let changeOutput = '';
 
-    exchanges.ethUsd.previous = prices.poloniex.eth.current.usd;
-  }
+      if (priceData[exchange][market].price.change.percentage > 0) {
+        changeOutput = colors.green(`▲ ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`);
+      } else if (priceData[exchange][market].price.change.percentage < 0) {
+        changeOutput = colors.red(`▼ ${Math.abs((priceData[exchange][market].price.change.percentage * 100).toFixed(2))}%`);
+      } else {
+        changeOutput = `- ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`;
+      }
 
-  // ETH / BTC
-  if (prices.poloniex.eth.current.btc !== exchanges.ethBtc.previous) {
-    if (prices.poloniex.eth.change.btc > 0) {
-      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
-    } else if (prices.poloniex.eth.change.btc < 0) {
-      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
-    } else {
-      exchanges.ethBtc.output = `           \t   \t ${leftPad(prices.poloniex.eth.current.btc, 8)} BTC          `;
-    }
-
-    // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +(prices.poloniex.eth.current.btc.replace(',', '')) && exchanges.ethBtc.updated + options.history.minimumDelay < (+ new Date())) {
-      prices.poloniex.eth.current.btc > exchanges.ethBtc.previous ? exchanges.ethBtc.history.push(colors.green(options.history.positiveSymbol)) : exchanges.ethBtc.history.push(colors.red(options.history.negativeSymbol));
-      exchanges.ethBtc.updated = (+ new Date());
-    }
-
-    exchanges.ethBtc.previous = prices.poloniex.eth.current.btc;
-  }
-
-  // BTC / USD
-  if (prices.poloniex.btc.current.usd !== exchanges.btcUsd.previous) {
-    if (prices.poloniex.btc.change.usd > 0) {
-      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.green(`▲ ${prices.poloniex.btc.change.usd}%`);
-    } else if (prices.poloniex.btc.change.usd < 0) {
-      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + colors.red(`▼ ${prices.poloniex.btc.change.usd}%`);
-    } else {
-      exchanges.btcUsd.output = `${leftPad(prices.poloniex.btc.current.usd, 8)} USD ` + `- ${prices.btc.poloniex.btc.change.usd}%`;
-    }
-
-    // Ensure updates cannot happen faster than `n` seconds
-    if (options.history.enabled && +(prices.poloniex.btc.current.usd.replace(',', '')) && exchanges.btcUsd.updated + options.history.minimumDelay < (+ new Date())) {
-      prices.poloniex.btc.current.usd > exchanges.btcUsd.previous ? exchanges.btcUsd.history.push(colors.green(options.history.positiveSymbol)) : exchanges.btcUsd.history.push(colors.red(options.history.negativeSymbol));
-      exchanges.btcUsd.updated = (+ new Date());
-    }
-
-    exchanges.btcUsd.previous = prices.poloniex.btc.current.usd;
-  }
-
-  process.stdout.write(' › Poloniex'.bold.white + '\tETH\t ' + exchanges.ethUsd.output + '\t' + exchanges.ethUsd.history.slice(options.history.length * -1).join('') + '\n' + exchanges.ethBtc.output + ' ' + exchanges.ethBtc.history.slice(options.history.length * -1).join('') + '\n\n           \tBTC\t ' + exchanges.btcUsd.output + '\t' + exchanges.btcUsd.history.slice(options.history.length * -1).join('') + '\n');
+      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\n`);
+    });
+  });
 };
 
-process.stdout.write('\n');
+// Retrieve pricing information from endpoint
+const retrieveMarketData = () => {
+  let leftToResolve = options.markets.length;
+  let priceData = {};
 
-connection.onopen = (session) => {
-  const prices = {
-    poloniex: {
-      eth: {
-        current: {
-          usd: '00.00',
-          btc: '0.0000'
-        },
-        change: {
-          usd: '0.00',
-          btc: '0.00'
-        }
-      },
-      btc: {
-        current: {
-          usd: '0000.00'
-        },
-        change: {
-          usd: '0.00'
-        }
+  options.markets.forEach((market) => {
+    needle.get(`https://api.cryptowat.ch/markets/${market}/summary`, (error, response) => {
+      if (!error && response.statusCode == 200) {
+        const [exchange, marketName] = market.split('/');
+
+        priceData[exchange] = priceData[exchange] || {};
+        priceData[exchange][marketName] = response.body && response.body.result;
       }
-    }
-  };
 
-  session.subscribe('ticker', (data) => {
-    if (data[0] === 'USDT_ETH') {
-      prices.poloniex.eth.current.usd = (+data[1]).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-      prices.poloniex.eth.change.usd = (+data[4] * 100).toFixed(2);
-    }
+      leftToResolve--;
 
-    if (data[0] === 'BTC_ETH') {
-      prices.poloniex.eth.current.btc = (+data[1]).toFixed(4).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-      prices.poloniex.eth.change.btc = (+data[4] * 100).toFixed(2);
-    }
-
-    if (data[0] === 'USDT_BTC') {
-      prices.poloniex.btc.current.usd = (+data[1]).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-      prices.poloniex.btc.change.usd = (+data[4] * 100).toFixed(2);
-    }
-
-    writeToStdout(prices);
+      if (!leftToResolve) {
+        writeToStdout(priceData);
+      }
+    });
   });
-}
+};
 
-connection.onclose = function () {
-  console.log('Socket connection closed');
-}
+// Kick out the jams
+setInterval(() => {
+  retrieveMarketData();
+}, options.app.pollInterval);
+retrieveMarketData();
 
-connection.open();
+//const prices = {
+  //poloniex: {
+    //eth: {
+      //current: {
+        //usd: '00.00',
+        //btc: '0.0000'
+      //},
+      //change: {
+        //usd: '0.00',
+        //btc: '0.00'
+      //}
+    //},
+    //btc: {
+      //current: {
+        //usd: '0000.00'
+      //},
+      //change: {
+        //usd: '0.00'
+      //}
+    //}
+  //}
+//};
+
+//session.subscribe('ticker', (data) => {
+  //if (data[0] === 'USDT_ETH') {
+    //prices.poloniex.eth.current.usd = (+data[1]).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    //prices.poloniex.eth.change.usd = (+data[4] * 100).toFixed(2);
+  //}
+
+  //if (data[0] === 'BTC_ETH') {
+    //prices.poloniex.eth.current.btc = (+data[1]).toFixed(4).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    //prices.poloniex.eth.change.btc = (+data[4] * 100).toFixed(2);
+  //}
+
+  //if (data[0] === 'USDT_BTC') {
+    //prices.poloniex.btc.current.usd = (+data[1]).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+    //prices.poloniex.btc.change.usd = (+data[4] * 100).toFixed(2);
+  //}
+
+  //writeToStdout(prices);
+//});

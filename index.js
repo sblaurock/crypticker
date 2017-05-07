@@ -1,5 +1,6 @@
 const colors = require('colors');
 const leftPad = require('left-pad');
+const rightPad = require('right-pad');
 const needle = require('needle');
 const _ = require('lodash');
 const options = require('./options.json');
@@ -62,7 +63,7 @@ const writeToStdout = (priceData) => {
 
       // Show exchange name
       if (previousExchange !== exchange) {
-        exchangeOutput = colors.bold.white(` › ${toTitleCase(exchange)}`) + leftPad('', options.app.padding);
+        exchangeOutput = colors.bold.white(` › ${rightPad(toTitleCase(exchange), longestExchangeLength)}`) + leftPad('', options.app.padding);
         previousExchange = exchange;
       } else {
         exchangeOutput = colors.bold.white(leftPad('', longestExchangeLength + 3)) + leftPad('', options.app.padding);

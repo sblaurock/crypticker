@@ -12,6 +12,7 @@
   },
   "markets": [
     "coinbase/btcusd",
-    "coinbase/ethusd"
+    "coinbase/ethusd",
+    "kraken/etheur"
   ]
 }

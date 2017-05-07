@@ -33,6 +33,8 @@ const toTitleCase = (string) => {
 };
 
 // Write display to STDOUT
+let previousPriceData = {};
+let priceDataHistory = {};
 const writeToStdout = (priceData) => {
   const sortedExchanges = _.keys(priceData).sort();
 
@@ -48,7 +50,9 @@ const writeToStdout = (priceData) => {
       const currencyA = market.substr(0, 3);
       const currencyB = market.substr(3, 3);
       let changeOutput = '';
+      let historyOutput = '';
 
+      // Show percent change in last 24 hours
       if (priceData[exchange][market].price.change.percentage > 0) {
         changeOutput = colors.green(`▲ ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`);
       } else if (priceData[exchange][market].price.change.percentage < 0) {
@@ -57,9 +61,29 @@ const writeToStdout = (priceData) => {
         changeOutput = `- ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`;
       }
 
-      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\n`);
+      // Show history of price updates
+      if (
+        options.app.history.enabled &&
+        previousPriceData[exchange] &&
+        previousPriceData[exchange][market] &&
+        +(previousPriceData[exchange][market].price.last)
+      ) {
+        priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || [];
+
+        if (priceData[exchange][market].price.last > previousPriceData[exchange][market].price.last) {
+          priceDataHistory[exchange + market].push(colors.green(options.app.history.positiveSymbol));
+        } else if (priceData[exchange][market].price.last < previousPriceData[exchange][market].price.last) {
+          priceDataHistory[exchange + market].push(colors.red(options.app.history.negativeSymbol));
+        } else {
+          priceDataHistory[exchange + market].push(options.app.history.neutralSymbol);
+        }
+      }
+
+      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\t${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + `\n`);
     });
   });
+
+  previousPriceData = priceData;
 };
 
 // Retrieve pricing information from endpoint

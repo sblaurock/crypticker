@@ -1,9 +1,10 @@
 {
   "app": {
-    "pollInterval": 5000,
+    "pollInterval": 15000,
     "history": {
       "enabled": true,
       "length": 20,
+      "neutralSymbol": " ",
       "positiveSymbol": "➚",
       "negativeSymbol": "➘"
     }

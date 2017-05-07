@@ -1,6 +1,7 @@
 const colors = require('colors');
 const leftPad = require('left-pad');
 const needle = require('needle');
+const readline = require('readline');
 const _ = require('lodash');
 const options = require('./options.json');
 
@@ -38,10 +39,13 @@ let priceDataHistory = {};
 const writeToStdout = (priceData) => {
   const sortedExchanges = _.keys(priceData).sort();
 
-  process.stdout.moveCursor(0, -3);
-  process.stdout.cursorTo(0);
-  process.stdout.clearScreenDown();
-  process.stdout.write('\n');
+  readline.moveCursor(process.stdout, 0, -3);
+  readline.cursorTo(process.stdout, 0);
+  readline.clearScreenDown(process.stdout);
+
+  if (_.keys(previousPriceData).length) {
+    process.stdout.write('\n');
+  }
 
   _.forEach(sortedExchanges, (exchange) => {
     const sortedMarkets = _.keys(priceData[exchange]).sort();
@@ -51,6 +55,7 @@ const writeToStdout = (priceData) => {
       const currencyB = market.substr(3, 3);
       let changeOutput = '';
       let historyOutput = '';
+      let historyChangeOutput = '';
 
       // Show percent change in last 24 hours
       if (priceData[exchange][market].price.change.percentage > 0) {
@@ -68,7 +73,7 @@ const writeToStdout = (priceData) => {
         previousPriceData[exchange][market] &&
         +(previousPriceData[exchange][market].price.last)
       ) {
-        priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || [];
+        priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || new Array(options.app.history.length).fill(' ');
 
         if (priceData[exchange][market].price.last > previousPriceData[exchange][market].price.last) {
           priceDataHistory[exchange + market].push(colors.green(options.app.history.positiveSymbol));
@@ -77,9 +82,15 @@ const writeToStdout = (priceData) => {
         } else {
           priceDataHistory[exchange + market].push(options.app.history.neutralSymbol);
         }
+
+        historyChangeOutput = (priceData[exchange][market].price.last - previousPriceData[exchange][market].price.last).toFixed(2);
+
+        if (historyChangeOutput >= 0) {
+          historyChangeOutput = `+${historyChangeOutput}`;
+        }
       }
 
-      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\t${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + `\n`);
+      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\t${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
     });
   });
 

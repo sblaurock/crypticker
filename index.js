@@ -1,7 +1,6 @@
 const colors = require('colors');
 const leftPad = require('left-pad');
 const needle = require('needle');
-const readline = require('readline');
 const _ = require('lodash');
 const options = require('./options.json');
 
@@ -36,16 +35,14 @@ const toTitleCase = (string) => {
 // Write display to STDOUT
 let previousPriceData = {};
 let priceDataHistory = {};
+let previousExchange = null;
 const writeToStdout = (priceData) => {
   const sortedExchanges = _.keys(priceData).sort();
 
-  readline.moveCursor(process.stdout, 0, -3);
-  readline.cursorTo(process.stdout, 0);
-  readline.clearScreenDown(process.stdout);
+  process.stdout.write('\033c');
+  process.stdout.write('\n');
 
-  if (_.keys(previousPriceData).length) {
-    process.stdout.write('\n');
-  }
+  const longestExchangeLength = sortedExchanges.sort((a, b) => { return b.length - a.length; })[0].length;
 
   _.forEach(sortedExchanges, (exchange) => {
     const sortedMarkets = _.keys(priceData[exchange]).sort();
@@ -53,9 +50,18 @@ const writeToStdout = (priceData) => {
     _.forEach(sortedMarkets, (market) => {
       const currencyA = market.substr(0, 3);
       const currencyB = market.substr(3, 3);
+      let exchangeOutput = '';
       let changeOutput = '';
       let historyOutput = '';
       let historyChangeOutput = '';
+
+      // Show exchange name
+      if (previousExchange !== exchange) {
+        exchangeOutput = colors.bold.white(` › ${toTitleCase(exchange)}`) + leftPad('', options.app.padding);
+        previousExchange = exchange;
+      } else {
+        exchangeOutput = colors.bold.white(leftPad('', longestExchangeLength + 3)) + leftPad('', options.app.padding);
+      }
 
       // Show percent change in last 24 hours
       if (priceData[exchange][market].price.change.percentage > 0) {
@@ -90,8 +96,10 @@ const writeToStdout = (priceData) => {
         }
       }
 
-      process.stdout.write(colors.bold.white(` › ${toTitleCase(exchange)}`) + `\t${currencyA.toUpperCase()}` + `\t${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + `\t${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
+      process.stdout.write(exchangeOutput + `${currencyA.toUpperCase()}` + leftPad('', options.app.padding) + `${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + leftPad('', options.app.padding) + `${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
     });
+
+    process.stdout.write('\n');
   });
 
   previousPriceData = priceData;

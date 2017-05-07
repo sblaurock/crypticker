@@ -11,7 +11,6 @@
   },
   "markets": [
     "coinbase/btcusd",
-    "coinbase/ethusd",
-    "coinbase/ethbtc"
+    "coinbase/ethusd"
   ]
 }

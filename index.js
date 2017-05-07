@@ -32,6 +32,11 @@ const toTitleCase = (string) => {
   });
 };
 
+// Add commas to numeric string
+const addCommas = (string) => {
+  return string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
+};
+
 // Write display to STDOUT
 let previousPriceData = {};
 let priceDataHistory = {};
@@ -96,7 +101,7 @@ const writeToStdout = (priceData) => {
         }
       }
 
-      process.stdout.write(exchangeOutput + `${currencyA.toUpperCase()}` + leftPad('', options.app.padding) + `${leftPad(priceData[exchange][market].price.last, 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + leftPad('', options.app.padding) + `${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
+      process.stdout.write(exchangeOutput + `${currencyA.toUpperCase()}` + leftPad('', options.app.padding) + `${leftPad(addCommas(priceData[exchange][market].price.last.toFixed(2)), 8)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + leftPad('', options.app.padding) + `${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
     });
 
     process.stdout.write('\n');

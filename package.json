@@ -18,7 +18,6 @@
   "homepage": "https://github.com/sblaurock/crypticker#readme",
   "dependencies": {
     "colors": "^1.1.2",
-    "jetty": "^0.2.1",
     "left-pad": "^1.1.3",
     "lodash": "^4.17.4",
     "needle": "^1.6.0",

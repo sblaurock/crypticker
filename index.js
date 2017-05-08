@@ -5,27 +5,6 @@ const needle = require('needle');
 const _ = require('lodash');
 const options = require('./options.json');
 
-const exchanges = {
-  ethUsd: {
-    history: [],
-    output: '',
-    previous: 0,
-    updated: 0
-  },
-  ethBtc: {
-    history: [],
-    output: '',
-    previous: 0,
-    updated: 0
-  },
-  btcUsd: {
-    history: [],
-    output: '',
-    previous: 0,
-    updated: 0
-  }
-};
-
 // Convert string to titlecase
 const toTitleCase = (string) => {
   return string.replace(/\w\S*/g, (text) => {
@@ -44,11 +23,10 @@ let priceDataHistory = {};
 let previousExchange = null;
 const writeToStdout = (priceData) => {
   const sortedExchanges = _.keys(priceData).sort();
+  const longestExchangeLength = sortedExchanges.sort((a, b) => { return b.length - a.length; })[0].length;
 
   process.stdout.write('\033c');
   process.stdout.write('\n');
-
-  const longestExchangeLength = sortedExchanges.sort((a, b) => { return b.length - a.length; })[0].length;
 
   _.forEach(sortedExchanges, (exchange) => {
     const sortedMarkets = _.keys(priceData[exchange]).sort();
@@ -71,11 +49,11 @@ const writeToStdout = (priceData) => {
 
       // Show percent change in last 24 hours
       if (priceData[exchange][market].price.change.percentage > 0) {
-        changeOutput = colors.green(`▲ ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`);
+        changeOutput = colors.green(`▲ ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}`);
       } else if (priceData[exchange][market].price.change.percentage < 0) {
-        changeOutput = colors.red(`▼ ${Math.abs((priceData[exchange][market].price.change.percentage * 100).toFixed(2))}%`);
+        changeOutput = colors.red(`▼ ${rightPad(((priceData[exchange][market].price.change.percentage * 100).toFixed(2) * -1).toString() + '%', 6)}`);
       } else {
-        changeOutput = `- ${(priceData[exchange][market].price.change.percentage * 100).toFixed(2)}%`;
+        changeOutput = `- ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}%`;
       }
 
       // Show history of price updates
@@ -98,7 +76,7 @@ const writeToStdout = (priceData) => {
         historyChangeOutput = (priceData[exchange][market].price.last - previousPriceData[exchange][market].price.last).toFixed(2);
 
         if (historyChangeOutput >= 0) {
-          historyChangeOutput = `+${historyChangeOutput}`;
+          historyChangeOutput = `+${Math.abs(historyChangeOutput).toFixed(2)}`;
         }
       }
 

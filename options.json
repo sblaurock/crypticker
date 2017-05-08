@@ -1,6 +1,6 @@
 {
   "app": {
-    "pollInterval": 15000,
+    "pollInterval": 30000,
     "padding": 8,
     "history": {
       "enabled": true,
@@ -13,6 +13,7 @@
   "markets": [
     "coinbase/btcusd",
     "coinbase/ethusd",
-    "kraken/etheur"
+    "kraken/ethusd",
+    "kraken/btcusd"
   ]
 }

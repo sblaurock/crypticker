@@ -1,19 +1,23 @@
 {
   "app": {
-    "pollInterval": 30000,
+    "pollInterval": 15000,
     "padding": 8,
+    "status": {
+      "enabled": true
+    },
     "history": {
       "enabled": true,
-      "length": 20,
-      "neutralSymbol": " ",
+      "length": 16,
+      "neutralSymbol": "⋅",
       "positiveSymbol": "➚",
       "negativeSymbol": "➘"
     }
   },
   "markets": [
-    "coinbase/btcusd",
-    "coinbase/ethusd",
-    "kraken/ethusd",
-    "kraken/btcusd"
+    "coinbase:btcusd",
+    "coinbase:ethusd",
+    "coinbase:ethbtc",
+    "kraken:ethusd",
+    "kraken:btcusd"
   ]
 }

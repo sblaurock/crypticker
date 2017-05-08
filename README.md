@@ -18,7 +18,7 @@ Markets and application preferences can be managed within `options.json`.
 | padding | Integer | Number of spaces to use between display sections | `8` |
 | history | Object | Parameters around ticker history display | |
 | - enabled | Boolean | Toggles history display on and off | `true` |
-| - length | Integer | Number of ticks to display within history readout | `16` |
+| - length | Integer | Number of ticks to display within readout | `16` |
 | - neutralSymbol | String | Symbol to use for no trend | `⋅` |
 | - positiveSymbol | String | Symbol to use for positive trend | `➚` |
 | - negativeSymbol | String | Symbol to use for negative trend | `➘` |

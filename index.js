@@ -90,7 +90,7 @@ const writeToStdout = (priceData, allowance) => {
         } else if (priceData[exchange][market].price.last < previousPriceData[exchange][market].price.last) {
           priceDataHistory[exchange + market].push(colors.red(options.app.history.negativeSymbol));
         } else {
-          priceDataHistory[exchange + market].push(options.app.history.neutralSymbol);
+          priceDataHistory[exchange + market].push(colors.grey(options.app.history.neutralSymbol));
         }
 
         historyChangeOutput = (priceData[exchange][market].price.last - previousPriceData[exchange][market].price.last).toFixed(2);

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Command line cryptocurrency price ticker.",
   "main": "index.js",
+  "bin": "bin/crypticker.js",
   "scripts": {
     "start": "node index.js"
   },

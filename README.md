@@ -22,6 +22,6 @@ Markets and application preferences can be managed within `options.json`.
 | - neutralSymbol | String | Symbol to use for no trend | `⋅` |
 | - positiveSymbol | String | Symbol to use for positive trend | `➚` |
 | - negativeSymbol | String | Symbol to use for negative trend | `➘` |
-| markets | Array | Listing of markets to monitor | `['exchange:currencyPair']` |
+| markets | Array | Listing of markets to monitor | `['kraken:ethusd']` |
 
 Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API. A listing of supported markets can be found [here](https://api.cryptowat.ch/markets).

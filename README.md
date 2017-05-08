@@ -10,5 +10,6 @@ Command line cryptocurrency price ticker.
     npm start
 
 ### Options
-Options can be managed within `options.json`
+Markets and application preferences can be managed within `options.json`.
 
+Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API.

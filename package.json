@@ -1,21 +1,21 @@
 {
-  "name": "coin-ticker",
+  "name": "crypticker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Command line cryptocurrency price ticker.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sblaurock/coin-ticker.git"
+    "url": "git+https://github.com/sblaurock/crypticker.git"
   },
   "author": "sblaurock",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sblaurock/coin-ticker/issues"
+    "url": "https://github.com/sblaurock/crypticker/issues"
   },
-  "homepage": "https://github.com/sblaurock/coin-ticker#readme",
+  "homepage": "https://github.com/sblaurock/crypticker#readme",
   "dependencies": {
     "colors": "^1.1.2",
     "jetty": "^0.2.1",

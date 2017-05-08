@@ -102,7 +102,6 @@ const writeToStdout = (priceData, allowance) => {
 
       // Show request status
       if (
-        options.app.status.enabled &&
         allowance.remaining < 100000000
       ) {
         if (!apiFailure) {

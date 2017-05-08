@@ -1,10 +1,7 @@
 {
   "app": {
-    "pollInterval": 15000,
+    "pollInterval": 60000,
     "padding": 8,
-    "status": {
-      "enabled": true
-    },
     "history": {
       "enabled": true,
       "length": 16,

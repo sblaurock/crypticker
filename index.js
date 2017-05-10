@@ -56,7 +56,7 @@ const writeToStdout = (priceData, allowance) => {
         exchangeOutput = colors.bold.white(` › ${rightPad(toTitleCase(exchange), longestExchangeLength)}`) + leftPad('', options.app.padding);
         previousExchange = exchange;
       } else {
-        exchangeOutput = colors.bold.white(leftPad('', longestExchangeLength + 3)) + leftPad('', options.app.padding);
+        exchangeOutput = colors.bold(leftPad('', longestExchangeLength + 3)) + leftPad('', options.app.padding);
       }
 
       // Show currency name
@@ -68,9 +68,9 @@ const writeToStdout = (priceData, allowance) => {
       }
 
       // Show percent change in last 24 hours
-      if (priceData[exchange][market].price.change.percentage > 0) {
+      if ((priceData[exchange][market].price.change.percentage * 100).toFixed(2) > 0) {
         changeOutput = colors.green(`▲ ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}`);
-      } else if (priceData[exchange][market].price.change.percentage < 0) {
+      } else if ((priceData[exchange][market].price.change.percentage * 100).toFixed(2) < 0) {
         changeOutput = colors.red(`▼ ${rightPad(((priceData[exchange][market].price.change.percentage * 100).toFixed(2) * -1).toString() + '%', 6)}`);
       } else {
         changeOutput = `- ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}`;
@@ -83,20 +83,34 @@ const writeToStdout = (priceData, allowance) => {
         previousPriceData[exchange][market] &&
         +(previousPriceData[exchange][market].price.last)
       ) {
+        let currentLastPrice = priceData[exchange][market].price.last.toFixed(2);
+        let previousLastPrice = previousPriceData[exchange][market].price.last.toFixed(2);
+        let symbol = Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > options.app.history.majorThreshold ?
+          options.app.history.majorSymbol :
+          options.app.history.minorSymbol;
+
         priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || new Array(options.app.history.length).fill(' ');
 
-        if (priceData[exchange][market].price.last > previousPriceData[exchange][market].price.last) {
-          priceDataHistory[exchange + market].push(colors.green(options.app.history.positiveSymbol));
-        } else if (priceData[exchange][market].price.last < previousPriceData[exchange][market].price.last) {
-          priceDataHistory[exchange + market].push(colors.red(options.app.history.negativeSymbol));
+        if (
+          currentLastPrice > previousLastPrice &&
+          currentLastPrice - previousLastPrice > options.app.history.minorThreshold
+        ) {
+          // Price has increased since last update and was greater than threshold
+          priceDataHistory[exchange + market].push(colors.green(symbol));
+        } else if (
+          currentLastPrice < previousLastPrice &&
+          previousLastPrice - currentLastPrice > options.app.history.minorThreshold
+        ) {
+          // Price has decreased since last update and was greater than threshold
+          priceDataHistory[exchange + market].push(colors.red(symbol));
         } else {
           priceDataHistory[exchange + market].push(colors.grey(options.app.history.neutralSymbol));
         }
 
-        historyChangeOutput = (priceData[exchange][market].price.last - previousPriceData[exchange][market].price.last).toFixed(2);
+        historyChangeOutput = (currentLastPrice - previousLastPrice).toFixed(2);
 
         if (historyChangeOutput >= 0) {
-          historyChangeOutput = `+${Math.abs(historyChangeOutput).toFixed(2)}`;
+          historyChangeOutput = `+${Math.abs(historyChangeOutput)}`;
         }
       }
 
@@ -131,7 +145,7 @@ const retrieveMarketData = () => {
   let priceData = {};
 
   needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
-    if (!error && response.statusCode === 200) {
+    if (!error && response && response.body && response.statusCode === 200) {
       _.forEach(response.body.result, (data, market) => {
         if (options.markets.indexOf(market) === -1) {
           return;

@@ -25,6 +25,7 @@ let previousCurrency = null;
 let statusOutput = '';
 let apiFailure = false;
 const writeToStdout = (priceData, allowance) => {
+  // Clear screen
   process.stdout.write('\033c');
   process.stdout.write('\n');
 
@@ -121,7 +122,7 @@ const writeToStdout = (priceData, allowance) => {
         if (!apiFailure) {
           statusOutput = `${colors.yellow(' ⚠ API limit is close to being reached')}\n`;
         } else {
-          statuOutput = `${colors.red(' ⚠ API limit has been reached')}\n`;
+          statusOutput = `${colors.red(' ⚠ API limit has been reached')}\n`;
         }
       } else {
         apiFailure = false;

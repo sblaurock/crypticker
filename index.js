@@ -102,15 +102,15 @@ const writeToStdout = (priceData, allowance) => {
           currentLastPrice - previousLastPrice > options.app.history.minorThreshold
         ) {
           // Price has increased since last update and was greater than threshold
-          priceDataHistory[exchange + market].push(colors.green(symbol));
+          priceDataHistory[exchange + market].push(colors.green.bold(symbol));
         } else if (
           currentLastPrice < previousLastPrice &&
           previousLastPrice - currentLastPrice > options.app.history.minorThreshold
         ) {
           // Price has decreased since last update and was greater than threshold
-          priceDataHistory[exchange + market].push(colors.red(symbol));
+          priceDataHistory[exchange + market].push(colors.red.bold(symbol));
         } else {
-          priceDataHistory[exchange + market].push(colors.grey(options.app.history.neutralSymbol));
+          priceDataHistory[exchange + market].push(colors.grey.bold(options.app.history.neutralSymbol));
         }
 
         historyChangeOutput = (currentLastPrice - previousLastPrice).toFixed(2);

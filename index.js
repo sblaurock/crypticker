@@ -86,9 +86,14 @@ const writeToStdout = (priceData, allowance) => {
       ) {
         let currentLastPrice = priceData[exchange][market].price.last.toFixed(2);
         let previousLastPrice = previousPriceData[exchange][market].price.last.toFixed(2);
-        let symbol = Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > options.app.history.majorThreshold ?
-          options.app.history.majorSymbol :
-          options.app.history.minorSymbol;
+        let symbol;
+
+        // Determine history symbol
+        if  (Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > options.app.history.majorThreshold) {
+          symbol = currentLastPrice > previousLastPrice ? options.app.history.positiveMajorSymbol : options.app.history.negativeMajorSymbol;
+        } else {
+          symbol = currentLastPrice > previousLastPrice ? options.app.history.positiveMinorSymbol : options.app.history.negativeMinorSymbol;
+        }
 
         priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || new Array(options.app.history.length).fill(' ');
 
@@ -161,7 +166,7 @@ const retrieveMarketData = () => {
       if (priceData) {
         writeToStdout(priceData, response.body.allowance);
       }
-    } else if (response.statuscode === 429) {
+    } else if (response && response.statuscode === 429) {
       writeToStdout(null);
     }
   });

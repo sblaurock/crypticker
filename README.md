@@ -15,6 +15,13 @@ Once installed globally, `crypticker` can be run as a binary
 crypticker
 ```
 
+| Flag | Type | Description |
+| --- | --- | --- |
+| `--nohistory` | | Disable history display |
+| `--history` | Boolean | Set history display |
+| `--interval` | Integer | Poll interval in milliseconds |
+| `--markets` | String | Comma separated list of markets |
+
 ### Options
 Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm ls crypticker`. After the first run, a local options file will be written to `~/.crypticker`. This can be used to preserve options between updates.
 

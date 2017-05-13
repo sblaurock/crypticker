@@ -5,13 +5,38 @@ const needle = require('needle');
 const _ = require('lodash');
 const os = require('os');
 const fs = require('fs');
+const yargs = require('yargs');
 let options = require('./options.json');
+
+const args = yargs.argv;
 
 // Check for local configuration
 if (fs.existsSync(`${os.homedir()}/.crypticker`)) {
   options = JSON.parse(fs.readFileSync(`${os.homedir()}/.crypticker`, 'utf8'));
 } else {
   fs.writeFileSync(`${os.homedir()}/.crypticker`, fs.readFileSync('./options.json'));
+}
+
+// Handle arguments
+if (args) {
+  // Disable history
+  if (args.history) {
+    options.app.history.enabled = !!args.history;
+  }
+
+  // Disable history
+  if (args.nohistory) {
+    options.app.history.enabled = false;
+  }
+
+  // Set interval
+  if (parseInt(args.interval, 10)) {
+    options.app.pollInterval = parseInt(args.interval, 10);
+  }
+
+  if (args.markets) {
+    options.markets = args.markets.split(',');
+  }
 }
 
 // Utility functions
@@ -86,7 +111,7 @@ const writeToStdout = (priceData, allowance) => {
         if ((exchangePriceData.price.change.percentage * 100).toFixed(2) > 0) {
           changeOutput = rightPad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 8);
         } else if ((exchangePriceData.price.change.percentage * 100).toFixed(2) < 0) {
-          changeOutput = rightPad(colors.red(`▼ ${(changePercentageFixed * -1).toString()}%`), 8);
+          changeOutput = rightPad(colors.red(`▼ ${(changePercentageFixed * -1).toFixed(2).toString()}%`), 8);
         } else {
           changeOutput = rightPad(`- ${changePercentageFixed.toString()}%`, 8);
         }

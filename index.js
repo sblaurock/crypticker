@@ -204,9 +204,10 @@ const retrieveMarketData = () => {
   const exchanges = [];
 
   needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
-    const body = response.body;
-    if (!error && response && response.body && response.statusCode === 200) {
-      _.forEach(response.body.result, (data, market) => {
+    const body = response && response.body;
+
+    if (!error && body && response.statusCode === 200) {
+      _.forEach(body.result, (data, market) => {
         if (options.markets.indexOf(market) === -1) {
           return;
         }

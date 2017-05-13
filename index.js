@@ -45,7 +45,8 @@ const writeToStdout = (priceData, allowance) => {
       const sortedExchanges = _.keys(outputData[primaryCurrency][secondaryCurrency]).sort();
 
       _.forEach(sortedExchanges, (exchange) => {
-        const changePercentage = outputData[primaryCurrency][secondaryCurrency][exchange].price.change.percentage * 100;
+        const exchangePriceData = outputData[primaryCurrency][secondaryCurrency][exchange];
+        const changePercentage = exchangePriceData.price.change.percentage * 100;
         const changePercentageFixed = (changePercentage).toFixed(2);
         let primaryCurrencyOutput = '';
         let secondaryCurrencyOutput = '';
@@ -70,12 +71,12 @@ const writeToStdout = (priceData, allowance) => {
         }
 
         // Show exchange name
-        exchangeOutput = rightPad(exchange, 12) + leftPad('', options.app.padding);
+        exchangeOutput = rightPad(exchange, priceData.longestExchangeLength) + leftPad('', options.app.padding);
 
         // Show percent change in last 24 hours
-        if ((outputData[primaryCurrency][secondaryCurrency][exchange].price.change.percentage * 100).toFixed(2) > 0) {
+        if ((exchangePriceData.price.change.percentage * 100).toFixed(2) > 0) {
           changeOutput = rightPad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 8);
-        } else if ((outputData[primaryCurrency][secondaryCurrency][exchange].price.change.percentage * 100).toFixed(2) < 0) {
+        } else if ((exchangePriceData.price.change.percentage * 100).toFixed(2) < 0) {
           changeOutput = rightPad(colors.red(`▼ ${(changePercentageFixed * -1).toString()}%`), 8);
         } else {
           changeOutput = rightPad(`- ${changePercentageFixed.toString()}%`, 8);
@@ -89,9 +90,11 @@ const writeToStdout = (priceData, allowance) => {
           previousPriceData[primaryCurrency][secondaryCurrency][exchange] &&
           +(previousPriceData[primaryCurrency][secondaryCurrency][exchange].price.last)
         ) {
-          const currentLastPrice = outputData[primaryCurrency][secondaryCurrency][exchange].price.last.toFixed(2);
-          const previousLastPrice = previousPriceData[primaryCurrency][secondaryCurrency][exchange].price.last.toFixed(2);
+          const currentLastPrice = exchangePriceData.price.last.toFixed(2);
+          const previousExchangeData = previousPriceData[primaryCurrency][secondaryCurrency][exchange];
+          const previousLastPrice = previousExchangeData.price.last.toFixed(2);
           const majorThreshold = options.app.history.majorThreshold;
+          const dataKey = primaryCurrency + secondaryCurrency + exchange;
           let symbol;
 
           // Determine history symbol
@@ -105,22 +108,22 @@ const writeToStdout = (priceData, allowance) => {
               options.app.history.negativeMinorSymbol;
           }
 
-          priceDataHistory[primaryCurrency + secondaryCurrency + exchange] = priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || new Array(options.app.history.length).fill(' ');
+          priceDataHistory[dataKey] = priceDataHistory[dataKey] || new Array(options.app.history.length).fill(' ');
 
           if (
             currentLastPrice > previousLastPrice &&
             currentLastPrice - previousLastPrice > options.app.history.minorThreshold
           ) {
             // Price has increased since last update and was greater than threshold
-            priceDataHistory[primaryCurrency + secondaryCurrency + exchange].push(colors.green.bold(symbol));
+            priceDataHistory[dataKey].push(colors.green.bold(symbol));
           } else if (
             currentLastPrice < previousLastPrice &&
             previousLastPrice - currentLastPrice > options.app.history.minorThreshold
           ) {
             // Price has decreased since last update and was greater than threshold
-            priceDataHistory[primaryCurrency + secondaryCurrency + exchange].push(colors.red.bold(symbol));
+            priceDataHistory[dataKey].push(colors.red.bold(symbol));
           } else {
-            priceDataHistory[primaryCurrency + secondaryCurrency + exchange].push(colors.grey(options.app.history.neutralSymbol));
+            priceDataHistory[dataKey].push(colors.grey(options.app.history.neutralSymbol));
           }
 
           historyChangeOutput = (currentLastPrice - previousLastPrice).toFixed(2);
@@ -144,7 +147,7 @@ const writeToStdout = (priceData, allowance) => {
           statusOutput = '';
         }
 
-        // eslint-disable-next-line prefer-template, no-useless-concat
+        // eslint-disable-next-line prefer-template, no-useless-concat, max-len
         process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + `${leftPad(utility.addCommas(outputData[primaryCurrency][secondaryCurrency][exchange].price.last.toFixed(2)), 10)} ` + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
 
@@ -164,8 +167,10 @@ const writeToStdout = (priceData, allowance) => {
 // Retrieve pricing information from endpoint
 const retrieveMarketData = () => {
   const priceData = {};
+  const exchanges = [];
 
   needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
+    const body = response.body;
     if (!error && response && response.body && response.statusCode === 200) {
       _.forEach(response.body.result, (data, market) => {
         if (options.markets.indexOf(market) === -1) {
@@ -176,10 +181,13 @@ const retrieveMarketData = () => {
         const primaryCurrency = marketName.substr(0, 3).toUpperCase();
         const secondaryCurrency = marketName.substr(3, 3).toUpperCase();
 
+        exchanges.push(exchange);
         priceData[primaryCurrency] = priceData[primaryCurrency] || {};
         priceData[primaryCurrency][secondaryCurrency] = priceData[primaryCurrency][secondaryCurrency] || {};
-        priceData[primaryCurrency][secondaryCurrency][utility.toTitleCase(exchange)] = response.body && response.body.result[market];
+        priceData[primaryCurrency][secondaryCurrency][utility.toTitleCase(exchange)] = body && body.result[market];
       });
+
+      priceData.longestExchangeLength = exchanges.sort((a, b) => b.length - a.length)[0].length;
 
       if (priceData) {
         writeToStdout(priceData, response.body.allowance);

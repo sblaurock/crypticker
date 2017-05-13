@@ -16,7 +16,7 @@ crypticker
 ```
 
 ### Options
-Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm ls crypticker`.
+Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm ls crypticker`. After the first run, a local options file will be written to `~/.crypticker`. This can be used to preserve options between updates.
 
 | Parameter | Type | Description | Example |
 | --- | --- | --- | --- |

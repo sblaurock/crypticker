@@ -3,7 +3,16 @@ const leftPad = require('left-pad');
 const rightPad = require('right-pad');
 const needle = require('needle');
 const _ = require('lodash');
-const options = require('./options.json');
+const os = require('os');
+const fs = require('fs');
+let options = require('./options.json');
+
+// Check for local configuration
+if (fs.existsSync(`${os.homedir()}/.crypticker`)) {
+  options = JSON.parse(fs.readFileSync(`${os.homedir()}/.crypticker`, 'utf8'));
+} else {
+  fs.writeFileSync(`${os.homedir()}/.crypticker`, fs.readFileSync('./options.json'));
+}
 
 // Utility functions
 const utility = {

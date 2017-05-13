@@ -1,11 +1,12 @@
 {
   "name": "crypticker",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Command line cryptocurrency price ticker.",
   "main": "index.js",
   "bin": "bin/crypticker.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint *.js"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,9 @@
     "lodash": "^4.17.4",
     "needle": "^1.6.0",
     "right-pad": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0"
   }
 }

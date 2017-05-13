@@ -5,56 +5,56 @@ const needle = require('needle');
 const _ = require('lodash');
 const options = require('./options.json');
 
-// Convert string to titlecase
-const toTitleCase = (string) => {
-  return string.replace(/\w\S*/g, (text) => {
-    return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
-  });
-};
+// Utility functions
+const utility = {
+  // Convert string to title case
+  toTitleCase: string => string.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substr(1).toLowerCase()),
 
-// Add commas to numeric string
-const addCommas = (string) => {
-  return string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
+  // Add commas to number
+  addCommas: string => string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')
 };
 
 // Write display to STDOUT
 let previousPriceData = {};
-let priceDataHistory = {};
+const priceDataHistory = {};
 let previousExchange = null;
 let previousCurrency = null;
 let statusOutput = '';
 let apiFailure = false;
 const writeToStdout = (priceData, allowance) => {
+  let outputData = priceData;
+
   // Clear screen
-  process.stdout.write('\033c');
+  process.stdout.write('\x1Bc');
   process.stdout.write('\n');
 
   // Ensure we've not exhausted API limits
   if (!priceData && _.keys(previousPriceData).length()) {
-    priceData = previousPriceData;
+    outputData = previousPriceData;
     apiFailure = true;
   } else if (!priceData) {
     return process.stdout.write(`${colors.red(' ⚠ API limit has been reached')}\n\n`);
   }
 
-  const sortedExchanges = _.keys(priceData).sort();
-  const longestExchangeLength = sortedExchanges.sort((a, b) => { return b.length - a.length; })[0].length;
+  const sortedExchanges = _.keys(outputData).sort();
+  const longestExchangeLength = sortedExchanges.sort((a, b) => b.length - a.length)[0].length;
 
   _.forEach(sortedExchanges, (exchange) => {
-    const sortedMarkets = _.keys(priceData[exchange]).sort();
+    const sortedMarkets = _.keys(outputData[exchange]).sort();
 
     _.forEach(sortedMarkets, (market) => {
       const currencyA = market.substr(0, 3);
       const currencyB = market.substr(3, 3);
+      const changePercentage = outputData[exchange][market].price.change.percentage * 100;
+      const changePercentageFixed = (changePercentage).toFixed(2);
       let exchangeOutput = '';
       let currencyOutput = '';
       let changeOutput = '';
-      let historyOutput = '';
       let historyChangeOutput = '';
 
       // Show exchange name
       if (previousExchange !== exchange) {
-        exchangeOutput = colors.bold.white(` › ${rightPad(toTitleCase(exchange), longestExchangeLength)}`) + leftPad('', options.app.padding);
+        exchangeOutput = colors.bold.white(` › ${rightPad(utility.toTitleCase(exchange), longestExchangeLength)}`) + leftPad('', options.app.padding);
         previousExchange = exchange;
       } else {
         exchangeOutput = colors.bold(leftPad('', longestExchangeLength + 3)) + leftPad('', options.app.padding);
@@ -69,12 +69,12 @@ const writeToStdout = (priceData, allowance) => {
       }
 
       // Show percent change in last 24 hours
-      if ((priceData[exchange][market].price.change.percentage * 100).toFixed(2) > 0) {
-        changeOutput = colors.green(`▲ ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}`);
-      } else if ((priceData[exchange][market].price.change.percentage * 100).toFixed(2) < 0) {
-        changeOutput = colors.red(`▼ ${rightPad(((priceData[exchange][market].price.change.percentage * 100).toFixed(2) * -1).toString() + '%', 6)}`);
+      if ((outputData[exchange][market].price.change.percentage * 100).toFixed(2) > 0) {
+        changeOutput = rightPad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 8);
+      } else if ((outputData[exchange][market].price.change.percentage * 100).toFixed(2) < 0) {
+        changeOutput = rightPad(colors.red(`▼ ${(changePercentageFixed * -1).toString()}%`), 8);
       } else {
-        changeOutput = `- ${rightPad((priceData[exchange][market].price.change.percentage * 100).toFixed(2).toString() + '%', 6)}`;
+        changeOutput = rightPad(`- ${changePercentageFixed.toString()}%`, 8);
       }
 
       // Show history of price updates
@@ -84,15 +84,20 @@ const writeToStdout = (priceData, allowance) => {
         previousPriceData[exchange][market] &&
         +(previousPriceData[exchange][market].price.last)
       ) {
-        let currentLastPrice = priceData[exchange][market].price.last.toFixed(2);
-        let previousLastPrice = previousPriceData[exchange][market].price.last.toFixed(2);
+        const currentLastPrice = outputData[exchange][market].price.last.toFixed(2);
+        const previousLastPrice = previousPriceData[exchange][market].price.last.toFixed(2);
+        const majorThreshold = options.app.history.majorThreshold;
         let symbol;
 
         // Determine history symbol
-        if  (Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > options.app.history.majorThreshold) {
-          symbol = currentLastPrice > previousLastPrice ? options.app.history.positiveMajorSymbol : options.app.history.negativeMajorSymbol;
+        if (Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > majorThreshold) {
+          symbol = currentLastPrice > previousLastPrice ?
+            options.app.history.positiveMajorSymbol :
+            options.app.history.negativeMajorSymbol;
         } else {
-          symbol = currentLastPrice > previousLastPrice ? options.app.history.positiveMinorSymbol : options.app.history.negativeMinorSymbol;
+          symbol = currentLastPrice > previousLastPrice ?
+            options.app.history.positiveMinorSymbol :
+            options.app.history.negativeMinorSymbol;
         }
 
         priceDataHistory[exchange + market] = priceDataHistory[exchange + market] || new Array(options.app.history.length).fill(' ');
@@ -110,7 +115,7 @@ const writeToStdout = (priceData, allowance) => {
           // Price has decreased since last update and was greater than threshold
           priceDataHistory[exchange + market].push(colors.red.bold(symbol));
         } else {
-          priceDataHistory[exchange + market].push(colors.grey.bold(options.app.history.neutralSymbol));
+          priceDataHistory[exchange + market].push(colors.grey(options.app.history.neutralSymbol));
         }
 
         historyChangeOutput = (currentLastPrice - previousLastPrice).toFixed(2);
@@ -134,7 +139,8 @@ const writeToStdout = (priceData, allowance) => {
         statusOutput = '';
       }
 
-      process.stdout.write(exchangeOutput + currencyOutput + leftPad('', options.app.padding) + `${leftPad(addCommas(priceData[exchange][market].price.last.toFixed(2)), 10)} ${currencyB.toUpperCase()} ` + `${changeOutput}` + ` ${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + `\n`);
+      // eslint-disable-next-line prefer-template, no-useless-concat
+      process.stdout.write(exchangeOutput + currencyOutput + leftPad('', options.app.padding) + `${leftPad(utility.addCommas(outputData[exchange][market].price.last.toFixed(2)), 10)} ${currencyB.toUpperCase()} ` + changeOutput + ` ${(priceDataHistory[exchange + market] || '') && priceDataHistory[exchange + market].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
     });
 
     process.stdout.write('\n');
@@ -144,11 +150,13 @@ const writeToStdout = (priceData, allowance) => {
 
   previousExchange = null;
   previousPriceData = priceData;
+
+  return true;
 };
 
 // Retrieve pricing information from endpoint
 const retrieveMarketData = () => {
-  let priceData = {};
+  const priceData = {};
 
   needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
     if (!error && response && response.body && response.statusCode === 200) {

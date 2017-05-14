@@ -1,4 +1,9 @@
 # crypticker
+[![npm](https://img.shields.io/npm/v/crypticker.svg)](https://www.npmjs.com/package/crypticker)
+[![npm](https://img.shields.io/npm/l/crypticker.svg)](https://www.npmjs.com/package/crypticker)
+[![npm](https://img.shields.io/npm/dm/crypticker.svg)](https://www.npmjs.com/package/crypticker)
+[![David](https://img.shields.io/david/sblaurock/crypticker.svg)](https://david-dm.org/sblaurock/crypticker)
+
 Command line cryptocurrency price ticker.
 
 ![screenshot](https://github.com/sblaurock/crypticker/raw/master/screenshot.png "Example screenshot of ticker.")

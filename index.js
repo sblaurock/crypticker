@@ -2,6 +2,7 @@ const colors = require('colors');
 const leftPad = require('left-pad');
 const rightPad = require('right-pad');
 const needle = require('needle');
+const moment = require('moment');
 const _ = require('lodash');
 const os = require('os');
 const fs = require('fs');
@@ -47,6 +48,7 @@ const priceDataHistory = {};
 let previousPrimaryCurrency = null;
 let previousSecondaryCurrency = null;
 let statusOutput = '';
+let lastUpdate = null;
 const writeToStdout = (limitReached, priceData, allowance) => {
   let outputData = priceData;
 
@@ -56,18 +58,21 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
   // Set status message for connectivity or API limit issues
   if (!priceData) {
+    const lastUpdateText = colors.grey(` / Last updated ${moment(lastUpdate).fromNow()}\n\n`);
+
     if (_.keys(previousPriceData).length) {
       outputData = previousPriceData;
     }
 
     if (limitReached) {
-      statusOutput = colors.red(' ⚠ API limit has been reached') + colors.grey('\n\n');
+      statusOutput = colors.red(' ⚠ API limit has been reached') + lastUpdateText;
     } else {
-      statusOutput = colors.red(' ⚠ Data retrieval error') + colors.grey('\n\n');
+      statusOutput = colors.red(' ⚠ Data retrieval error') + lastUpdateText;
     }
   } else if (allowance && allowance.remaining < 100000000) {
     statusOutput = colors.yellow(' ⚠ API limit is close to being reached\n\n');
   } else {
+    lastUpdate = +Date.now();
     statusOutput = '';
   }
 

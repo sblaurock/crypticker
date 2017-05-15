@@ -23,12 +23,11 @@ crypticker
 | Flag | Type | Description |
 | --- | --- | --- |
 | `--nohistory` | | Disable history display |
-| `--history` | Boolean | Set history display |
 | `--interval` | Integer | Poll interval in milliseconds |
 | `--markets` | String | Comma separated list of markets |
 
 ### Options
-Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm ls crypticker`. After the first run, a local options file will be written to `~/.crypticker`. This can be used to preserve options between updates.
+Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm ls crypticker`. Application will prefer an options file located at `~/.crypticker` if one exists - this can be used to preserve options between updates.
 
 | Parameter | Type | Description | Example |
 | --- | --- | --- | --- |
@@ -39,11 +38,11 @@ Markets and application preferences can be managed within `options.json`. If the
 | history.length | Integer | Number of ticks to display within readout | `16` |
 | history.minorThreshold | Float | Change percentage that must be exceeded to display a minor symbol | `0.00` |
 | history.majorThreshold | Float | Change percentage that must be exceeded to display a major symbol | `0.20` |
-| history.positiveMajorSymbol | String | Symbol to use for positive major trend | `∙` |
-| history.positiveMinorSymbol | String | Symbol to use for positive minor trend | `⋅` |
-| history.neutralSymbol | String | Symbol to use for no trend | `⋅` |
-| history.negativeMinorSymbol | String | Symbol to use for negative minor trend | `⋅` |
-| history.negativeMajorSymbol | String | Symbol to use for negative major trend | `∙` |
+| history.positiveMajorSymbol | String | Symbol to use for positive major trend | `"∙"` |
+| history.positiveMinorSymbol | String | Symbol to use for positive minor trend | `⋅"` |
+| history.neutralSymbol | String | Symbol to use for no trend | `"⋅"` |
+| history.negativeMinorSymbol | String | Symbol to use for negative minor trend | `"⋅"` |
+| history.negativeMajorSymbol | String | Symbol to use for negative major trend | `"∙"` |
 | markets | Array | List of markets to monitor | `['kraken:ethusd']` |
 
 Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API. A listing of supported markets can be found [here](https://api.cryptowat.ch/markets).

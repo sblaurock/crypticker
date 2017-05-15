@@ -13,17 +13,10 @@ const args = yargs.argv;
 // Check for local configuration
 if (fs.existsSync(`${os.homedir()}/.crypticker`)) {
   options = JSON.parse(fs.readFileSync(`${os.homedir()}/.crypticker`, 'utf8'));
-} else {
-  fs.writeFileSync(`${os.homedir()}/.crypticker`, fs.readFileSync('./options.json'));
 }
 
 // Handle arguments
 if (args) {
-  // Disable history
-  if (args.history) {
-    options.app.history.enabled = !!args.history;
-  }
-
   // Disable history
   if (args.nohistory) {
     options.app.history.enabled = false;
@@ -54,23 +47,31 @@ const priceDataHistory = {};
 let previousPrimaryCurrency = null;
 let previousSecondaryCurrency = null;
 let statusOutput = '';
-let apiFailure = false;
-const writeToStdout = (priceData, allowance) => {
+const writeToStdout = (limitReached, priceData, allowance) => {
   let outputData = priceData;
 
   // Clear screen
   process.stdout.write('\x1Bc');
   process.stdout.write('\n');
 
-  // Ensure we've not exhausted API limits
-  if (!priceData && _.keys(previousPriceData).length()) {
-    outputData = previousPriceData;
-    apiFailure = true;
-  } else if (!priceData) {
-    return process.stdout.write(`${colors.red(' ⚠ API limit has been reached')}\n\n`);
+  // Set status message for connectivity or API limit issues
+  if (!priceData) {
+    if (_.keys(previousPriceData).length) {
+      outputData = previousPriceData;
+    }
+
+    if (limitReached) {
+      statusOutput = colors.red(' ⚠ API limit has been reached') + colors.grey('\n\n');
+    } else {
+      statusOutput = colors.red(' ⚠ Data retrieval error') + colors.grey('\n\n');
+    }
+  } else if (allowance && allowance.remaining < 100000000) {
+    statusOutput = colors.yellow(' ⚠ API limit is close to being reached\n\n');
+  } else {
+    statusOutput = '';
   }
 
-  const sortedPrimaryCurrencies = _.keys(priceData).sort();
+  const sortedPrimaryCurrencies = _.keys(outputData).sort();
 
   _.forEach(sortedPrimaryCurrencies, (primaryCurrency) => {
     const sortedSecondaryCurrencies = _.keys(outputData[primaryCurrency]).sort();
@@ -105,7 +106,7 @@ const writeToStdout = (priceData, allowance) => {
         }
 
         // Show exchange name
-        exchangeOutput = rightPad(exchange, priceData.longestExchangeLength) + leftPad('', options.app.padding);
+        exchangeOutput = rightPad(exchange, outputData.longestExchangeLength) + leftPad('', options.app.padding);
 
         // Show percent change in last 24 hours
         if ((exchangePriceData.price.change.percentage * 100).toFixed(2) > 0) {
@@ -119,6 +120,7 @@ const writeToStdout = (priceData, allowance) => {
         // Show history of price updates
         if (
           options.app.history.enabled &&
+          previousPriceData &&
           previousPriceData[primaryCurrency] &&
           previousPriceData[primaryCurrency][secondaryCurrency] &&
           previousPriceData[primaryCurrency][secondaryCurrency][exchange] &&
@@ -167,20 +169,6 @@ const writeToStdout = (priceData, allowance) => {
           }
         }
 
-        // Show request status
-        if (
-          allowance.remaining < 100000000
-        ) {
-          if (!apiFailure) {
-            statusOutput = `${colors.yellow(' ⚠ API limit is close to being reached')}\n`;
-          } else {
-            statusOutput = `${colors.red(' ⚠ API limit has been reached')}\n`;
-          }
-        } else {
-          apiFailure = false;
-          statusOutput = '';
-        }
-
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len
         process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + `${leftPad(utility.addCommas(outputData[primaryCurrency][secondaryCurrency][exchange].price.last.toFixed(2)), 10)} ` + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
@@ -193,7 +181,7 @@ const writeToStdout = (priceData, allowance) => {
 
   previousPrimaryCurrency = null;
   previousSecondaryCurrency = null;
-  previousPriceData = priceData;
+  previousPriceData = outputData;
 
   return true;
 };
@@ -225,11 +213,13 @@ const retrieveMarketData = () => {
       priceData.longestExchangeLength = exchanges.sort((a, b) => b.length - a.length)[0].length;
 
       if (priceData) {
-        writeToStdout(priceData, response.body.allowance);
+        return writeToStdout(null, priceData, response.body.allowance);
       }
     } else if (response && response.statuscode === 429) {
-      writeToStdout(null);
+      return writeToStdout(true);
     }
+
+    return writeToStdout(false, null);
   });
 };
 

@@ -1,10 +1,10 @@
 {
   "app": {
-    "pollInterval": 15000,
+    "pollInterval": 60000,
     "padding": 8,
     "history": {
       "enabled": true,
-      "length": 16,
+      "length": 15,
       "minorThreshold": 0.00,
       "majorThreshold": 0.20,
       "positiveMajorSymbol": "∙",

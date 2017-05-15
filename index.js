@@ -88,6 +88,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         const exchangePriceData = outputData[primaryCurrency][secondaryCurrency][exchange];
         const changePercentage = exchangePriceData.price.change.percentage * 100;
         const changePercentageFixed = (changePercentage).toFixed(2);
+        let lastPriceValue = outputData[primaryCurrency][secondaryCurrency][exchange].price.last;
         let primaryCurrencyOutput = '';
         let secondaryCurrencyOutput = '';
         let exchangeOutput = '';
@@ -174,8 +175,14 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           }
         }
 
+        if (lastPriceValue < 1) {
+          lastPriceValue = lastPriceValue.toFixed(4);
+        } else {
+          lastPriceValue = utility.addCommas(lastPriceValue.toFixed(2));
+        }
+
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len
-        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + `${leftPad(utility.addCommas(outputData[primaryCurrency][secondaryCurrency][exchange].price.last.toFixed(2)), 10)} ` + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
+        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + leftPad(lastPriceValue, 10) + ' ' + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
 
       process.stdout.write('\n');

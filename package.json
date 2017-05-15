@@ -1,6 +1,6 @@
 {
   "name": "crypticker",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Command line cryptocurrency price ticker.",
   "main": "index.js",
   "bin": "bin/crypticker.js",

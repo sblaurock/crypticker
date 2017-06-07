@@ -28,8 +28,8 @@ if (args) {
     options.app.pollInterval = parseInt(args.interval, 10);
   }
 
-  if (args.markets) {
-    options.markets = args.markets.split(',');
+  if (args.markets && args.markets.length) {
+    options.markets = args.markets.replace(' ', '').split(',');
   }
 }
 
@@ -48,7 +48,7 @@ const priceDataHistory = {};
 let previousPrimaryCurrency = null;
 let previousSecondaryCurrency = null;
 let statusOutput = '';
-let lastUpdate = null;
+let lastUpdate = +Date.now();
 const writeToStdout = (limitReached, priceData, allowance) => {
   let outputData = priceData;
 
@@ -222,7 +222,9 @@ const retrieveMarketData = () => {
         priceData[primaryCurrency][secondaryCurrency][utility.toTitleCase(exchange)] = body && body.result[market];
       });
 
-      priceData.longestExchangeLength = exchanges.sort((a, b) => b.length - a.length)[0].length;
+      const sortedExchanges =  exchanges.sort((a, b) => b.length - a.length);
+
+      priceData.longestExchangeLength = sortedExchanges && sortedExchanges[0] && sortedExchanges[0].length;
 
       if (priceData) {
         return writeToStdout(null, priceData, response.body.allowance);

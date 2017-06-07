@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/dm/crypticker.svg)](https://www.npmjs.com/package/crypticker)
 [![David](https://img.shields.io/david/sblaurock/crypticker.svg)](https://david-dm.org/sblaurock/crypticker)
 
-Command line cryptocurrency price ticker.
+Command line cryptocurrency price ticker for Bitcoin, Ethereum, Ripple, and more.
 
 ![screenshot](https://github.com/sblaurock/crypticker/raw/master/screenshot.png "Example screenshot of ticker.")
 

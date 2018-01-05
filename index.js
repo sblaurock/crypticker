@@ -34,9 +34,6 @@ if (args) {
 
 // Utility functions
 const utility = {
-  // Convert string to title case
-  toTitleCase: string => string.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substr(1).toLowerCase()),
-
   // Add commas to number
   addCommas: string => string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'),
 
@@ -47,6 +44,7 @@ const utility = {
 // Write display to STDOUT
 let previousPriceData = {};
 const priceDataHistory = {};
+const exchangeLookup = {};
 let previousPrimaryCurrency = null;
 let previousSecondaryCurrency = null;
 let statusOutput = '';
@@ -127,11 +125,11 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show percent change in last 24 hours
         if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) > 0) {
-          changeOutput = pad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 16);
+          changeOutput = pad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 15);
         } else if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) < 0) {
-          changeOutput = pad(colors.red(`▼ ${changePercentageFixed.toString()}%`), 16);
+          changeOutput = pad(colors.red(`▼ ${changePercentageFixed.toString()}%`), 15);
         } else {
-          changeOutput = pad(`  ${changePercentageFixed.toString()}%`, 7, '+');
+          changeOutput = pad('', 7);
         }
 
         // Show history of price updates
@@ -232,10 +230,10 @@ const retrieveMarketData = () => {
         const primaryCurrency = marketName.substr(0, 3).toUpperCase();
         const secondaryCurrency = marketName.substr(3, 3).toUpperCase();
 
-        exchanges.push(exchange);
+        exchanges.push(exchangeLookup[exchange]);
         priceData[primaryCurrency] = priceData[primaryCurrency] || {};
         priceData[primaryCurrency][secondaryCurrency] = priceData[primaryCurrency][secondaryCurrency] || {};
-        priceData[primaryCurrency][secondaryCurrency][utility.toTitleCase(exchange)] = body && body.result[market];
+        priceData[primaryCurrency][secondaryCurrency][exchangeLookup[exchange]] = body && body.result[market];
       });
 
       const sortedExchanges = exchanges.sort((a, b) => b.length - a.length);
@@ -253,8 +251,28 @@ const retrieveMarketData = () => {
   });
 };
 
+// Retrieve exchange information from endpoint
+const retrieveExchangeData = () => {
+  needle.get('https://api.cryptowat.ch/exchanges', (error, response) => {
+    const body = response && response.body;
+
+    if (!error && body && response.statusCode === 200) {
+      body.result.forEach((exchange) => {
+        exchangeLookup[exchange.symbol] = exchange.name;
+      });
+
+      setInterval(() => {
+        retrieveMarketData();
+      }, options.app.pollInterval);
+
+      return retrieveMarketData();
+    } else if (response && response.statuscode === 429) {
+      return writeToStdout(true);
+    }
+
+    return writeToStdout(false, null);
+  });
+};
+
 // Kick out the jams
-setInterval(() => {
-  retrieveMarketData();
-}, options.app.pollInterval);
-retrieveMarketData();
+retrieveExchangeData();

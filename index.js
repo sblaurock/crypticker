@@ -165,13 +165,13 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
           if (
             currentLastPrice > previousLastPrice &&
-            currentLastPrice - previousLastPrice > options.app.history.minorThreshold
+            utility.fixed(currentLastPrice - previousLastPrice, 6) > options.app.history.minorThreshold
           ) {
             // Price has increased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.green.bold(symbol));
           } else if (
             currentLastPrice < previousLastPrice &&
-            previousLastPrice - currentLastPrice > options.app.history.minorThreshold
+            utility.fixed(previousLastPrice - currentLastPrice, 6) > options.app.history.minorThreshold
           ) {
             // Price has decreased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.red.bold(symbol));
@@ -179,17 +179,20 @@ const writeToStdout = (limitReached, priceData, allowance) => {
             priceDataHistory[dataKey].push(colors.grey(options.app.history.neutralSymbol));
           }
 
-          historyChangeOutput = (currentLastPrice - previousLastPrice).toFixed(2);
+          historyChangeOutput = utility.fixed(currentLastPrice - previousLastPrice, 6);
 
-          if (historyChangeOutput >= 0) {
+          if (historyChangeOutput === 0) {
+            historyChangeOutput = '';
+          } else if (historyChangeOutput >= 0) {
             historyChangeOutput = `+${Math.abs(historyChangeOutput)}`;
           }
         }
 
-        if (lastPriceValue < 1) {
-          lastPriceValue = lastPriceValue.toFixed(4);
-        } else {
+        // Set precision based on amount
+        if (lastPriceValue >= 1) {
           lastPriceValue = utility.addCommas(lastPriceValue.toFixed(2));
+        } else {
+          lastPriceValue = lastPriceValue.toFixed(6);
         }
 
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len

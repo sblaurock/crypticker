@@ -45,6 +45,6 @@ Markets and application preferences can be managed within `options.json`. If the
 | history.neutralSymbol | String | Symbol to use for no trend | `"⋅"` |
 | history.negativeMinorSymbol | String | Symbol to use for negative minor trend | `"⋅"` |
 | history.negativeMajorSymbol | String | Symbol to use for negative major trend | `"∙"` |
-| markets | Array | List of markets to monitor | `['kraken:ethusd']` |
+| markets | Array | List of markets to monitor | `['gdax:ethbtc']` |
 
 Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API. A listing of supported markets can be found [here](https://api.cryptowat.ch/markets).

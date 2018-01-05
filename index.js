@@ -41,7 +41,7 @@ const utility = {
   addCommas: string => string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'),
 
   // Return a rounded number of desired precision
-  fixed: (number, precision) => Math.round(number * `1e${precision}`) / `1e${precision}`
+  fixed: (number, precision) => Math.round(number * `1e${precision}`) / `1e${precision}`,
 };
 
 // Write display to STDOUT
@@ -224,7 +224,7 @@ const retrieveMarketData = () => {
         priceData[primaryCurrency][secondaryCurrency][utility.toTitleCase(exchange)] = body && body.result[market];
       });
 
-      const sortedExchanges =  exchanges.sort((a, b) => b.length - a.length);
+      const sortedExchanges = exchanges.sort((a, b) => b.length - a.length);
 
       priceData.longestExchangeLength = sortedExchanges && sortedExchanges[0] && sortedExchanges[0].length;
 

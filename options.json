@@ -15,10 +15,10 @@
     }
   },
   "markets": [
-    "coinbase:btcusd",
-    "coinbase:ethusd",
-    "coinbase:ethbtc",
-    "kraken:ethusd",
-    "kraken:btcusd"
+    "gdax:btcusd",
+    "gdax:ethusd",
+    "gdax:ethbtc",
+    "bitstamp:ethusd",
+    "bistamp:btcusd"
   ]
 }

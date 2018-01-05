@@ -1,6 +1,5 @@
 const colors = require('colors');
-const leftPad = require('left-pad');
-const rightPad = require('right-pad');
+const pad = require('pad');
 const needle = require('needle');
 const moment = require('moment');
 const _ = require('lodash');
@@ -39,7 +38,10 @@ const utility = {
   toTitleCase: string => string.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substr(1).toLowerCase()),
 
   // Add commas to number
-  addCommas: string => string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')
+  addCommas: string => string.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'),
+
+  // Return a rounded number of desired precision
+  fixed: (number, precision) => Math.round(number * `1e${precision}`) / `1e${precision}`
 };
 
 // Write display to STDOUT
@@ -87,7 +89,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
       _.forEach(sortedExchanges, (exchange) => {
         const exchangePriceData = outputData[primaryCurrency][secondaryCurrency][exchange];
         const changePercentage = exchangePriceData.price.change.percentage * 100;
-        const changePercentageFixed = (changePercentage).toFixed(2);
+        const changePercentageFixed = utility.fixed(changePercentage, 2);
         let lastPriceValue = outputData[primaryCurrency][secondaryCurrency][exchange].price.last;
         let primaryCurrencyOutput = '';
         let secondaryCurrencyOutput = '';
@@ -97,30 +99,30 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show primary currency name
         if (previousPrimaryCurrency !== primaryCurrency) {
-          primaryCurrencyOutput = colors.bold.white(` › ${primaryCurrency}`) + leftPad('', options.app.padding);
+          primaryCurrencyOutput = colors.bold.white(` › ${primaryCurrency}`) + pad(options.app.padding, '');
           previousPrimaryCurrency = primaryCurrency;
         } else {
-          primaryCurrencyOutput = colors.bold(leftPad('', 3 + 3)) + leftPad('', options.app.padding);
+          primaryCurrencyOutput = colors.bold(pad(3 + 3, '')) + pad(options.app.padding, '');
         }
 
         // Show secondary currency name
         if (previousSecondaryCurrency !== secondaryCurrency) {
-          secondaryCurrencyOutput = secondaryCurrency + leftPad('', options.app.padding);
+          secondaryCurrencyOutput = secondaryCurrency + pad(options.app.padding, '');
           previousSecondaryCurrency = secondaryCurrency;
         } else {
-          secondaryCurrencyOutput = leftPad('', 3) + leftPad('', options.app.padding);
+          secondaryCurrencyOutput = pad(3, '') + pad(options.app.padding, '');
         }
 
         // Show exchange name
-        exchangeOutput = rightPad(exchange, outputData.longestExchangeLength) + leftPad('', options.app.padding);
+        exchangeOutput = pad(exchange, outputData.longestExchangeLength) + pad(options.app.padding, '');
 
         // Show percent change in last 24 hours
-        if ((exchangePriceData.price.change.percentage * 100).toFixed(2) > 0) {
-          changeOutput = rightPad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 8);
-        } else if ((exchangePriceData.price.change.percentage * 100).toFixed(2) < 0) {
-          changeOutput = rightPad(colors.red(`▼ ${(changePercentageFixed * -1).toFixed(2).toString()}%`), 8);
+        if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) > 0) {
+          changeOutput = colors.green(`▲ ${changePercentageFixed.toString()}%`);
+        } else if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) < 0) {
+          changeOutput = colors.red(`▼ ${utility.fixed(changePercentageFixed * -1, 2).toString()}%`);
         } else {
-          changeOutput = rightPad(`- ${changePercentageFixed.toString()}%`, 8);
+          changeOutput = `- ${changePercentageFixed.toString()}%`;
         }
 
         // Show history of price updates
@@ -182,7 +184,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         }
 
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len
-        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + leftPad(lastPriceValue, 10) + ' ' + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
+        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + pad(10, lastPriceValue) + ' ' + pad(changeOutput, 16) + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
 
       process.stdout.write('\n');

@@ -87,15 +87,23 @@ const writeToStdout = (limitReached, priceData, allowance) => {
       const sortedExchanges = _.keys(outputData[primaryCurrency][secondaryCurrency]).sort();
 
       _.forEach(sortedExchanges, (exchange) => {
+        let changePercentageFixed;
         const exchangePriceData = outputData[primaryCurrency][secondaryCurrency][exchange];
-        const changePercentage = exchangePriceData.price.change.percentage * 100;
-        const changePercentageFixed = utility.fixed(changePercentage, 2);
+        const changePercentage = Math.abs(exchangePriceData.price.change.percentage) * 100;
         let lastPriceValue = outputData[primaryCurrency][secondaryCurrency][exchange].price.last;
         let primaryCurrencyOutput = '';
         let secondaryCurrencyOutput = '';
         let exchangeOutput = '';
         let changeOutput = '';
         let historyChangeOutput = '';
+
+        if (changePercentage > 100) {
+          changePercentageFixed = changePercentage.toFixed(0);
+        } else if (changePercentage > 10) {
+          changePercentageFixed = changePercentage.toFixed(1);
+        } else {
+          changePercentageFixed = changePercentage.toFixed(2);
+        }
 
         // Show primary currency name
         if (previousPrimaryCurrency !== primaryCurrency) {
@@ -118,11 +126,11 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show percent change in last 24 hours
         if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) > 0) {
-          changeOutput = colors.green(`▲ ${changePercentageFixed.toString()}%`);
+          changeOutput = pad(colors.green(`▲ ${changePercentageFixed.toString()}%`), 16);
         } else if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) < 0) {
-          changeOutput = colors.red(`▼ ${utility.fixed(changePercentageFixed * -1, 2).toString()}%`);
+          changeOutput = pad(colors.red(`▼ ${changePercentageFixed.toString()}%`), 16);
         } else {
-          changeOutput = `- ${changePercentageFixed.toString()}%`;
+          changeOutput = pad(`  ${changePercentageFixed.toString()}%`, 7, '+');
         }
 
         // Show history of price updates
@@ -184,7 +192,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         }
 
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len
-        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + pad(10, lastPriceValue) + ' ' + pad(changeOutput, 16) + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
+        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + pad(10, lastPriceValue) + ' ' + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
 
       process.stdout.write('\n');

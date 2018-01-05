@@ -97,6 +97,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         let changeOutput = '';
         let historyChangeOutput = '';
 
+        // Set precision based on amount
         if (changePercentage > 100) {
           changePercentageFixed = changePercentage.toFixed(0);
         } else if (changePercentage > 10) {
@@ -197,12 +198,13 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
       process.stdout.write('\n');
     });
+
+    previousSecondaryCurrency = null;
   });
 
   process.stdout.write(`${statusOutput}`);
 
   previousPrimaryCurrency = null;
-  previousSecondaryCurrency = null;
   previousPriceData = outputData;
 
   return true;

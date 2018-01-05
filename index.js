@@ -148,10 +148,11 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           const previousLastPrice = previousExchangeData.price.last.toFixed(2);
           const majorThreshold = options.app.history.majorThreshold;
           const dataKey = primaryCurrency + secondaryCurrency + exchange;
+          const percentageChange = utility.fixed((Math.abs(currentLastPrice - previousLastPrice) / previousLastPrice), 8) * 100;
           let symbol;
 
           // Determine history symbol
-          if (Math.abs(currentLastPrice - previousLastPrice).toFixed(2) > majorThreshold) {
+          if (percentageChange > majorThreshold) {
             symbol = currentLastPrice > previousLastPrice ?
               options.app.history.positiveMajorSymbol :
               options.app.history.negativeMajorSymbol;

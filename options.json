@@ -5,8 +5,8 @@
     "history": {
       "enabled": true,
       "length": 15,
-      "minorThreshold": 0.00,
-      "majorThreshold": 0.20,
+      "minorThreshold": 0.0,
+      "majorThreshold": 0.25,
       "positiveMajorSymbol": "∙",
       "positiveMinorSymbol": "⋅",
       "neutralSymbol": "⋅",
@@ -19,6 +19,6 @@
     "gdax:ethusd",
     "gdax:ethbtc",
     "bitstamp:ethusd",
-    "bistamp:btcusd"
+    "bitstamp:btcusd"
   ]
 }

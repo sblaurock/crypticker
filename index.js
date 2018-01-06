@@ -96,9 +96,9 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         let historyChangeOutput = '';
 
         // Set precision based on amount
-        if (changePercentage > 100) {
+        if (changePercentage >= 100) {
           changePercentageFixed = changePercentage.toFixed(0);
-        } else if (changePercentage > 10) {
+        } else if (changePercentage >= 10) {
           changePercentageFixed = changePercentage.toFixed(1);
         } else {
           changePercentageFixed = changePercentage.toFixed(2);
@@ -141,9 +141,9 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           previousPriceData[primaryCurrency][secondaryCurrency][exchange] &&
           +(previousPriceData[primaryCurrency][secondaryCurrency][exchange].price.last)
         ) {
-          const currentLastPrice = exchangePriceData.price.last.toFixed(2);
+          const currentLastPrice = utility.fixed(exchangePriceData.price.last, 6);
           const previousExchangeData = previousPriceData[primaryCurrency][secondaryCurrency][exchange];
-          const previousLastPrice = previousExchangeData.price.last.toFixed(2);
+          const previousLastPrice = utility.fixed(previousExchangeData.price.last, 6)
           const majorThreshold = options.app.history.majorThreshold;
           const dataKey = primaryCurrency + secondaryCurrency + exchange;
           const percentageChange = utility.fixed((Math.abs(currentLastPrice - previousLastPrice) / previousLastPrice), 8) * 100;
@@ -178,12 +178,23 @@ const writeToStdout = (limitReached, priceData, allowance) => {
             priceDataHistory[dataKey].push(colors.grey(options.app.history.neutralSymbol));
           }
 
-          historyChangeOutput = utility.fixed(currentLastPrice - previousLastPrice, 6);
+          historyChangeOutput = currentLastPrice - previousLastPrice;
 
+          // Format history output, set precision based on amount
           if (historyChangeOutput === 0) {
             historyChangeOutput = '';
-          } else if (historyChangeOutput >= 0) {
-            historyChangeOutput = `+${Math.abs(historyChangeOutput)}`;
+          } else if (historyChangeOutput > 0) {
+            if (historyChangeOutput >= 1) {
+              historyChangeOutput = `+${utility.addCommas(historyChangeOutput.toFixed(2))}`;
+            } else {
+              historyChangeOutput = `+${utility.fixed(historyChangeOutput, 6)}`;
+            }
+          } else {
+            if (historyChangeOutput <= -1) {
+              historyChangeOutput = `${utility.addCommas(historyChangeOutput.toFixed(2))}`;
+            } else {
+              historyChangeOutput = `${utility.fixed(historyChangeOutput, 6)}`;
+            }
           }
         }
 

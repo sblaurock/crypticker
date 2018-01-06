@@ -181,7 +181,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           historyChangeOutput = currentLastPrice - previousLastPrice;
 
           // Format history output, set precision based on amount
-          if (historyChangeOutput === 0) {
+          if (historyChangeOutput === 0 || options.app.history.hideAmount) {
             historyChangeOutput = '';
           } else if (historyChangeOutput > 0) {
             if (historyChangeOutput >= 1) {

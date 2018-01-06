@@ -38,6 +38,7 @@ Markets and application preferences can be managed within `options.json`. If the
 | history | Object | Parameters around ticker history display | |
 | history.enabled | Boolean | Toggles history display on and off | `true` |
 | history.length | Integer | Number of ticks to display within readout | `16` |
+| history.hideAmount | Boolean | Toggles display of price changes on and off | `false` |
 | history.minorThreshold | Float | Change percentage that must be exceeded to display a minor symbol | `0.00` |
 | history.majorThreshold | Float | Change percentage that must be exceeded to display a major symbol | `0.20` |
 | history.positiveMajorSymbol | String | Symbol to use for positive major trend | `"∙"` |

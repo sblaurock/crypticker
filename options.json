@@ -5,6 +5,7 @@
     "history": {
       "enabled": true,
       "length": 15,
+      "hideAmount": false,
       "minorThreshold": 0.0,
       "majorThreshold": 0.25,
       "positiveMajorSymbol": "∙",

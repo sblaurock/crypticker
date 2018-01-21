@@ -6,13 +6,20 @@ const _ = require('lodash');
 const os = require('os');
 const fs = require('fs');
 const yargs = require('yargs');
+const pjson = require('./package.json');
 let options = require('./options.json');
 
 const args = yargs.argv;
 
+// Configure Needle
+needle.defaults({
+  open_timeout: 3000,
+  user_agent: `${pjson.name}/${pjson.version}`,
+});
+
 // Check for local configuration
-if (fs.existsSync(`${os.homedir()}/.crypticker`)) {
-  options = JSON.parse(fs.readFileSync(`${os.homedir()}/.crypticker`, 'utf8'));
+if (fs.existsSync(`${os.homedir()}/.${pjson.name}`)) {
+  options = JSON.parse(fs.readFileSync(`${os.homedir()}/.${pjson.name}`, 'utf8'));
 }
 
 // Handle arguments
@@ -231,7 +238,7 @@ const retrieveMarketData = () => {
   const priceData = {};
   const exchanges = [];
 
-  needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
+  needle.get('//api.cryptowat.ch/markets/summaries', (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {
@@ -267,7 +274,7 @@ const retrieveMarketData = () => {
 
 // Retrieve exchange information from endpoint
 const retrieveExchangeData = () => {
-  needle.get('https://api.cryptowat.ch/exchanges', (error, response) => {
+  needle.get('//api.cryptowat.ch/exchanges', (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {

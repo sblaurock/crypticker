@@ -8,8 +8,8 @@ Command line cryptocurrency price ticker for Bitcoin, Ethereum, and more.
 
 ![screenshot](https://github.com/sblaurock/crypticker/raw/master/screenshot.png "Example screenshot of ticker.")
 
-### Installation
-Installation can be done via `npm` as a global package
+### Installation / Update
+Installation or update can be done via `npm` as a global package
 ```bash
 npm i -g crypticker
 ```

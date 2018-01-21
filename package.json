@@ -1,7 +1,26 @@
 {
   "name": "crypticker",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Command line cryptocurrency price ticker for Bitcoin, Ethereum, and more.",
+  "author": "sblaurock",
+  "license": "MIT",
+  "homepage": "https://github.com/sblaurock/crypticker#readme",
+  "keywords": [
+    "bitcoin",
+    "ethereum",
+    "cryptowatch",
+    "litecoin",
+    "ripple",
+    "command-line",
+    "coin",
+    "cryptocurrency",
+    "ticker",
+    "btc",
+    "eth",
+    "ltc",
+    "xrp",
+    "price-ticker"
+  ],
   "main": "index.js",
   "bin": "bin/crypticker.js",
   "scripts": {
@@ -12,12 +31,9 @@
     "type": "git",
     "url": "git+https://github.com/sblaurock/crypticker.git"
   },
-  "author": "sblaurock",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/sblaurock/crypticker/issues"
   },
-  "homepage": "https://github.com/sblaurock/crypticker#readme",
   "dependencies": {
     "colors": "^1.1.2",
     "lodash": "^4.17.4",

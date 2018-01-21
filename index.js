@@ -238,7 +238,7 @@ const retrieveMarketData = () => {
   const priceData = {};
   const exchanges = [];
 
-  needle.get('//api.cryptowat.ch/markets/summaries', (error, response) => {
+  needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {
@@ -274,7 +274,7 @@ const retrieveMarketData = () => {
 
 // Retrieve exchange information from endpoint
 const retrieveExchangeData = () => {
-  needle.get('//api.cryptowat.ch/exchanges', (error, response) => {
+  needle.get('https://api.cryptowat.ch/exchanges', (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {

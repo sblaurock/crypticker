@@ -49,6 +49,7 @@ let previousPrimaryCurrency = null;
 let previousSecondaryCurrency = null;
 let statusOutput = '';
 let lastUpdate = +Date.now();
+let retrievalError = false;
 const writeToStdout = (limitReached, priceData, allowance) => {
   let outputData = priceData;
 
@@ -69,11 +70,15 @@ const writeToStdout = (limitReached, priceData, allowance) => {
     } else {
       statusOutput = colors.red(' ⚠ Data retrieval error') + lastUpdateText;
     }
+
+    retrievalError = true;
   } else if (allowance && allowance.remaining < 100000000) {
     statusOutput = colors.yellow(' ⚠ API limit is close to being reached\n\n');
+    retrievalError = false;
   } else {
     lastUpdate = +Date.now();
     statusOutput = '';
+    retrievalError = false;
   }
 
   const sortedPrimaryCurrencies = _.keys(outputData).sort();
@@ -143,7 +148,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         ) {
           const currentLastPrice = utility.fixed(exchangePriceData.price.last, 6);
           const previousExchangeData = previousPriceData[primaryCurrency][secondaryCurrency][exchange];
-          const previousLastPrice = utility.fixed(previousExchangeData.price.last, 6)
+          const previousLastPrice = utility.fixed(previousExchangeData.price.last, 6);
           const majorThreshold = options.app.history.majorThreshold;
           const dataKey = primaryCurrency + secondaryCurrency + exchange;
           const percentageChange = utility.fixed((Math.abs(currentLastPrice - previousLastPrice) / previousLastPrice), 8) * 100;
@@ -175,7 +180,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
             // Price has decreased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.red.bold(symbol));
           } else {
-            priceDataHistory[dataKey].push(colors.grey(options.app.history.neutralSymbol));
+            priceDataHistory[dataKey].push(retrievalError ? ' ' : colors.grey(options.app.history.neutralSymbol));
           }
 
           historyChangeOutput = currentLastPrice - previousLastPrice;
@@ -189,12 +194,10 @@ const writeToStdout = (limitReached, priceData, allowance) => {
             } else {
               historyChangeOutput = `+${utility.fixed(historyChangeOutput, 6)}`;
             }
+          } else if (historyChangeOutput <= -1) {
+            historyChangeOutput = `${utility.addCommas(historyChangeOutput.toFixed(2))}`;
           } else {
-            if (historyChangeOutput <= -1) {
-              historyChangeOutput = `${utility.addCommas(historyChangeOutput.toFixed(2))}`;
-            } else {
-              historyChangeOutput = `${utility.fixed(historyChangeOutput, 6)}`;
-            }
+            historyChangeOutput = `${utility.fixed(historyChangeOutput, 6)}`;
           }
         }
 
@@ -281,7 +284,12 @@ const retrieveExchangeData = () => {
       return writeToStdout(true);
     }
 
-    return writeToStdout(false, null);
+    writeToStdout(false, null);
+
+    // Retry on connection failure
+    return setTimeout(() => {
+      retrieveExchangeData();
+    }, options.app.pollInterval);
   });
 };
 

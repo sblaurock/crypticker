@@ -1,7 +1,7 @@
 {
   "name": "crypticker",
-  "version": "1.3.5",
-  "description": "Command line cryptocurrency price ticker for Bitcoin, Ethereum, and more.",
+  "version": "1.3.6",
+  "description": "Command line cryptocurrency price ticker for Bitcoin, Ethereum, Litecoin, and more.",
   "author": "sblaurock",
   "license": "MIT",
   "homepage": "https://github.com/sblaurock/crypticker#readme",
@@ -10,16 +10,20 @@
     "ethereum",
     "cryptowatch",
     "litecoin",
-    "ripple",
     "command-line",
     "coin",
     "cryptocurrency",
+    "cryptocurrency-price-ticker",
     "ticker",
     "btc",
     "eth",
     "ltc",
-    "xrp",
-    "price-ticker"
+    "crypticker",
+    "price-ticker",
+    "node",
+    "nodejs",
+    "crypto",
+    "moon"
   ],
   "main": "index.js",
   "bin": "bin/crypticker.js",
@@ -40,7 +44,7 @@
     "moment": "^2.20.1",
     "needle": "^2.1.1",
     "pad": "^2.0.3",
-    "yargs": "^10.1.2"
+    "yargs": "^11.0.0"
   },
   "devDependencies": {
     "eslint": "^4.17.0",

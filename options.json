@@ -16,9 +16,9 @@
     }
   },
   "markets": [
-    "gdax:btcusd",
-    "gdax:ethusd",
-    "gdax:ethbtc",
+    "coinbase-pro:btcusd",
+    "coinbase-pro:ethusd",
+    "coinbase-pro:ethbtc",
     "bitstamp:ethusd",
     "bitstamp:btcusd"
   ]

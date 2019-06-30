@@ -1,6 +1,6 @@
 {
   "name": "crypticker",
-  "version": "1.3.9",
+  "version": "1.4.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -1209,9 +1209,9 @@
       "dev": true
     },
     "pad": {
-      "version": "2.3.0",
-      "resolved": "https://registry.npmjs.org/pad/-/pad-2.3.0.tgz",
-      "integrity": "sha512-lxrgnOG5AXmzMRT1O5urWtYFxHnFSE+QntgTHij1nvS4W+ubhQLmQRHmZXDeEvk9I00itAixLqU9Q6fE0gW3sw==",
+      "version": "3.2.0",
+      "resolved": "https://registry.npmjs.org/pad/-/pad-3.2.0.tgz",
+      "integrity": "sha512-2u0TrjcGbOjBTJpyewEl4hBO3OeX5wWue7eIFPzQTg6wFSvoaHcBTTUY5m+n0hd04gmTCPuY0kCpVIVuw5etwg==",
       "requires": {
         "wcwidth": "^1.0.1"
       }

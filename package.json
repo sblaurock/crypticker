@@ -1,6 +1,6 @@
 {
   "name": "crypticker",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Command line cryptocurrency price ticker for Bitcoin, Ethereum, Litecoin, and more.",
   "author": "sblaurock",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "moment": "^2.24.0",
     "needle": "^2.4.0",
     "pad": "^3.2.0",
-    "yargs": "^13.2.4"
+    "yargs": "^15.4.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

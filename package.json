@@ -1,6 +1,6 @@
 {
   "name": "crypticker",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Command line cryptocurrency price ticker for Bitcoin, Ethereum, Litecoin, and more.",
   "author": "sblaurock",
   "license": "MIT",

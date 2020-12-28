@@ -46,6 +46,6 @@ Markets and application preferences can be managed within `options.json`. If the
 | history.neutralSymbol | String | Symbol to use for no trend | `"⋅"` |
 | history.negativeMinorSymbol | String | Symbol to use for negative minor trend | `"⋅"` |
 | history.negativeMajorSymbol | String | Symbol to use for negative major trend | `"∙"` |
-| markets | Array | List of markets to monitor | `['coinbase-pro:ethbtc']` |
+| markets | Array | List of markets to monitor | `['coinbase-pro:eth/btc']` |
 
-Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API. A listing of supported markets can be found [here](https://api.cryptowat.ch/markets).
+Powered by the [Cryptowatch](https://cryptowat.ch/docs/api) public API. A listing of supported markets can be found [here](https://api.cryptowat.ch/markets). A forward slash (`/`) should be used to split pairs within markets list (for example: `coinbase-pro:link/eth` in favor of `coinbase-pro:linketh`).

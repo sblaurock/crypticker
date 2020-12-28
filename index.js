@@ -79,7 +79,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
     }
 
     retrievalError = true;
-  } else if (allowance && allowance.remaining < 100000000) {
+  } else if (allowance && allowance.remaining < 1) {
     statusOutput = colors.yellow(' ⚠ API limit is close to being reached\n\n');
     retrievalError = false;
   } else {

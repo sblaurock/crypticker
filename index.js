@@ -35,7 +35,7 @@ if (args) {
   }
 
   if (args.markets && args.markets.length) {
-    options.markets = args.markets.replace(' ', '').split(',');
+    options.markets = args.markets.replace(/\s/g, '').split(',');
   }
 }
 
@@ -118,18 +118,24 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show primary currency name
         if (previousPrimaryCurrency !== primaryCurrency) {
-          primaryCurrencyOutput = colors.bold.white(` › ${primaryCurrency}`) + pad(options.app.padding, '');
+          primaryCurrencyOutput = colors.bold.white(` › ${primaryCurrency}`)
+            + pad(outputData.longestPrimaryCurrencyLength - primaryCurrency.length, '')
+            + pad(options.app.padding, '');
           previousPrimaryCurrency = primaryCurrency;
         } else {
-          primaryCurrencyOutput = colors.bold(pad(3 + 3, '')) + pad(options.app.padding, '');
+          primaryCurrencyOutput = colors.bold(pad(outputData.longestPrimaryCurrencyLength + 3, ''))
+            + pad(options.app.padding, '');
         }
 
         // Show secondary currency name
         if (previousSecondaryCurrency !== secondaryCurrency) {
-          secondaryCurrencyOutput = secondaryCurrency + pad(options.app.padding, '');
+          secondaryCurrencyOutput = secondaryCurrency
+            + pad(outputData.longestSecondaryCurrencyLength - secondaryCurrency.length, '')
+            + pad(options.app.padding, '');
           previousSecondaryCurrency = secondaryCurrency;
         } else {
-          secondaryCurrencyOutput = pad(3, '') + pad(options.app.padding, '');
+          secondaryCurrencyOutput = pad(outputData.longestSecondaryCurrencyLength, '')
+            + pad(options.app.padding, '');
         }
 
         // Show exchange name
@@ -146,43 +152,43 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show history of price updates
         if (
-          options.app.history.enabled &&
-          previousPriceData &&
-          previousPriceData[primaryCurrency] &&
-          previousPriceData[primaryCurrency][secondaryCurrency] &&
-          previousPriceData[primaryCurrency][secondaryCurrency][exchange] &&
-          +(previousPriceData[primaryCurrency][secondaryCurrency][exchange].price.last)
+          options.app.history.enabled
+          && previousPriceData
+          && previousPriceData[primaryCurrency]
+          && previousPriceData[primaryCurrency][secondaryCurrency]
+          && previousPriceData[primaryCurrency][secondaryCurrency][exchange]
+          && +(previousPriceData[primaryCurrency][secondaryCurrency][exchange].price.last)
         ) {
           const currentLastPrice = utility.fixed(exchangePriceData.price.last, 6);
           const previousExchangeData = previousPriceData[primaryCurrency][secondaryCurrency][exchange];
           const previousLastPrice = utility.fixed(previousExchangeData.price.last, 6);
-          const majorThreshold = options.app.history.majorThreshold;
+          const { majorThreshold } = options.app.history;
           const dataKey = primaryCurrency + secondaryCurrency + exchange;
           const percentageChange = utility.fixed((Math.abs(currentLastPrice - previousLastPrice) / previousLastPrice), 8) * 100;
           let symbol;
 
           // Determine history symbol
           if (percentageChange > majorThreshold) {
-            symbol = currentLastPrice > previousLastPrice ?
-              options.app.history.positiveMajorSymbol :
-              options.app.history.negativeMajorSymbol;
+            symbol = currentLastPrice > previousLastPrice
+              ? options.app.history.positiveMajorSymbol
+              : options.app.history.negativeMajorSymbol;
           } else {
-            symbol = currentLastPrice > previousLastPrice ?
-              options.app.history.positiveMinorSymbol :
-              options.app.history.negativeMinorSymbol;
+            symbol = currentLastPrice > previousLastPrice
+              ? options.app.history.positiveMinorSymbol
+              : options.app.history.negativeMinorSymbol;
           }
 
           priceDataHistory[dataKey] = priceDataHistory[dataKey] || new Array(options.app.history.length).fill(' ');
 
           if (
-            currentLastPrice > previousLastPrice &&
-            utility.fixed(currentLastPrice - previousLastPrice, 6) > options.app.history.minorThreshold
+            currentLastPrice > previousLastPrice
+            && utility.fixed(currentLastPrice - previousLastPrice, 6) > options.app.history.minorThreshold
           ) {
             // Price has increased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.green.bold(symbol));
           } else if (
-            currentLastPrice < previousLastPrice &&
-            utility.fixed(previousLastPrice - currentLastPrice, 6) > options.app.history.minorThreshold
+            currentLastPrice < previousLastPrice
+            && utility.fixed(previousLastPrice - currentLastPrice, 6) > options.app.history.minorThreshold
           ) {
             // Price has decreased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.red.bold(symbol));
@@ -236,6 +242,8 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 // Retrieve pricing information from endpoint
 const retrieveMarketData = () => {
   const priceData = {};
+  const primaryCurrencies = [];
+  const secondaryCurrencies = [];
   const exchanges = [];
 
   needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
@@ -243,23 +251,51 @@ const retrieveMarketData = () => {
 
     if (!error && body && response.statusCode === 200) {
       _.forEach(body.result, (data, market) => {
-        if (options.markets.indexOf(market) === -1) {
+        const marketsSlashesReplaced = options.markets.map(marketOption => marketOption.replace('/', ''));
+        const marketMatchIndex = marketsSlashesReplaced.indexOf(market);
+
+        // Disregard any options that do not exist within response
+        if (marketMatchIndex === -1) {
           return;
         }
 
-        const [exchange, marketName] = market.split(':');
-        const primaryCurrency = marketName.substr(0, 3).toUpperCase();
-        const secondaryCurrency = marketName.substr(3, 3).toUpperCase();
+        const marketMatch = options.markets[marketMatchIndex];
+        const [exchange, marketName] = marketMatch.split(':');
+        let primaryCurrency;
+        let secondaryCurrency;
 
+        // Allow for vanity use of '/' to split primary and secondary currency
+        if (marketName.includes('/')) {
+          [primaryCurrency, secondaryCurrency] = marketName.split('/');
+        } else {
+          primaryCurrency = marketName.substr(0, 3);
+          secondaryCurrency = marketName.substr(3, 3);
+        }
+
+        primaryCurrency = primaryCurrency.toUpperCase();
+        secondaryCurrency = secondaryCurrency.toUpperCase();
+
+        primaryCurrencies.push(primaryCurrency);
+        secondaryCurrencies.push(secondaryCurrency);
         exchanges.push(exchangeLookup[exchange]);
         priceData[primaryCurrency] = priceData[primaryCurrency] || {};
         priceData[primaryCurrency][secondaryCurrency] = priceData[primaryCurrency][secondaryCurrency] || {};
         priceData[primaryCurrency][secondaryCurrency][exchangeLookup[exchange]] = body && body.result[market];
       });
 
+      const sortedPrimaryCurrencies = primaryCurrencies.sort((a, b) => b.length - a.length);
+      const sortedSecondaryCurrencies = secondaryCurrencies.sort((a, b) => b.length - a.length);
       const sortedExchanges = exchanges.sort((a, b) => b.length - a.length);
 
-      priceData.longestExchangeLength = sortedExchanges && sortedExchanges[0] && sortedExchanges[0].length;
+      priceData.longestPrimaryCurrencyLength = sortedPrimaryCurrencies
+        && sortedPrimaryCurrencies[0]
+        && sortedPrimaryCurrencies[0].length;
+      priceData.longestSecondaryCurrencyLength = sortedSecondaryCurrencies
+        && sortedSecondaryCurrencies[0]
+        && sortedSecondaryCurrencies[0].length;
+      priceData.longestExchangeLength = sortedExchanges
+        && sortedExchanges[0]
+        && sortedExchanges[0].length;
 
       if (priceData) {
         return writeToStdout(null, priceData, response.body.allowance);
@@ -287,7 +323,9 @@ const retrieveExchangeData = () => {
       }, options.app.pollInterval);
 
       return retrieveMarketData();
-    } else if (response && response.statuscode === 429) {
+    }
+
+    if (response && response.statuscode === 429) {
       return writeToStdout(true);
     }
 

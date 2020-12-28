@@ -16,10 +16,10 @@
     }
   },
   "markets": [
-    "coinbase-pro:btcusd",
-    "coinbase-pro:ethusd",
-    "coinbase-pro:ethbtc",
-    "bitstamp:ethusd",
-    "bitstamp:btcusd"
+    "coinbase-pro:btc/usd",
+    "coinbase-pro:eth/usd",
+    "coinbase-pro:eth/btc",
+    "bitstamp:eth/usd",
+    "bitstamp:btc/usd"
   ]
 }

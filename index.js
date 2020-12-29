@@ -47,7 +47,7 @@ if (args) {
   }
 }
 
-// Legacy support for `app` object within options (moved to root level in 1.5.3)
+// Legacy support for `app` object within options (moved to root level in 1.6.0)
 options = {
   ...options,
   ...options.app,

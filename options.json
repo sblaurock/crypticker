@@ -1,19 +1,17 @@
 {
-  "app": {
-    "pollInterval": 60000,
-    "padding": 8,
-    "history": {
-      "enabled": true,
-      "length": 15,
-      "hideAmount": false,
-      "minorThreshold": 0.0,
-      "majorThreshold": 0.25,
-      "positiveMajorSymbol": "∙",
-      "positiveMinorSymbol": "⋅",
-      "neutralSymbol": "⋅",
-      "negativeMinorSymbol": "⋅",
-      "negativeMajorSymbol": "∙"
-    }
+  "pollInterval": 300000,
+  "padding": 8,
+  "history": {
+    "enabled": true,
+    "length": 15,
+    "hideAmount": false,
+    "minorThreshold": 0.0,
+    "majorThreshold": 0.25,
+    "positiveMajorSymbol": "∙",
+    "positiveMinorSymbol": "⋅",
+    "neutralSymbol": "⋅",
+    "negativeMinorSymbol": "⋅",
+    "negativeMajorSymbol": "∙"
   },
   "markets": [
     "coinbase-pro:btc/usd",

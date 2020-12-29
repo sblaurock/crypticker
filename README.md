@@ -22,9 +22,10 @@ crypticker
 
 | Flag | Type | Description |
 | --- | --- | --- |
-| `--nohistory` | | Disable history display |
+| `--no-history` | | Disable history display |
 | `--interval` | Integer | Poll interval in milliseconds |
 | `--markets` | String | Comma separated list of markets |
+| `--api-key` | String | Cryptowat.ch API key (optional) |
 
 ### Options
 Markets and application preferences can be managed within `options.json`. If the package was installed globally, the installation directory (and corresponding `options.json`) file may be found with `npm root -g`. Application will prefer an options file named `.crypticker` located in the home directory (`~`) if one exists - this can be used to preserve options between updates.
@@ -33,6 +34,7 @@ Markets and application preferences can be managed within `options.json`. If the
 
 | Parameter | Type | Description | Example |
 | --- | --- | --- | --- |
+| apiKey | String | Cryptowat.ch API key (optional) | `BYKU2QBYIQUE386W37BO` |
 | pollInterval | Integer | Interval at which to poll API (in milliseconds) | `30000` |
 | padding | Integer | Number of spaces to use between display sections | `8` |
 | history | Object | Parameters around ticker history display | |

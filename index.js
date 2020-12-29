@@ -24,20 +24,35 @@ if (fs.existsSync(`${os.homedir()}/.${pjson.name}`)) {
 
 // Handle arguments
 if (args) {
+  const apiKey = args.apikey || args['api-key'] || args.apiKey;
+
   // Disable history
-  if (args.nohistory) {
-    options.app.history.enabled = false;
+  if (args.nohistory || args['no-history']) {
+    options.history.enabled = false;
   }
 
   // Set interval
   if (parseInt(args.interval, 10)) {
-    options.app.pollInterval = parseInt(args.interval, 10);
+    options.pollInterval = parseInt(args.interval, 10);
   }
 
+  // Set list of markets
   if (args.markets && args.markets.length) {
     options.markets = args.markets.replace(/\s/g, '').split(',');
   }
+
+  // Set Cryptowat.ch API key
+  if (apiKey) {
+    options.apiKey = apiKey;
+  }
 }
+
+// Legacy support for `app` object within options (moved to root level in 1.5.3)
+options = {
+  ...options,
+  ...options.app,
+};
+delete options.app;
 
 // Utility functions
 const utility = {
@@ -120,26 +135,26 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         if (previousPrimaryCurrency !== primaryCurrency) {
           primaryCurrencyOutput = colors.bold.white(` › ${primaryCurrency}`)
             + pad(outputData.longestPrimaryCurrencyLength - primaryCurrency.length, '')
-            + pad(options.app.padding, '');
+            + pad(options.padding, '');
           previousPrimaryCurrency = primaryCurrency;
         } else {
           primaryCurrencyOutput = colors.bold(pad(outputData.longestPrimaryCurrencyLength + 3, ''))
-            + pad(options.app.padding, '');
+            + pad(options.padding, '');
         }
 
         // Show secondary currency name
         if (previousSecondaryCurrency !== secondaryCurrency) {
           secondaryCurrencyOutput = secondaryCurrency
             + pad(outputData.longestSecondaryCurrencyLength - secondaryCurrency.length, '')
-            + pad(options.app.padding, '');
+            + pad(options.padding, '');
           previousSecondaryCurrency = secondaryCurrency;
         } else {
           secondaryCurrencyOutput = pad(outputData.longestSecondaryCurrencyLength, '')
-            + pad(options.app.padding, '');
+            + pad(options.padding, '');
         }
 
         // Show exchange name
-        exchangeOutput = pad(exchange, outputData.longestExchangeLength) + pad(options.app.padding, '');
+        exchangeOutput = pad(exchange, outputData.longestExchangeLength) + pad(options.padding, '');
 
         // Show percent change in last 24 hours
         if (utility.fixed(exchangePriceData.price.change.percentage * 100, 2) > 0) {
@@ -152,7 +167,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
 
         // Show history of price updates
         if (
-          options.app.history.enabled
+          options.history.enabled
           && previousPriceData
           && previousPriceData[primaryCurrency]
           && previousPriceData[primaryCurrency][secondaryCurrency]
@@ -162,7 +177,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           const currentLastPrice = utility.fixed(exchangePriceData.price.last, 6);
           const previousExchangeData = previousPriceData[primaryCurrency][secondaryCurrency][exchange];
           const previousLastPrice = utility.fixed(previousExchangeData.price.last, 6);
-          const { majorThreshold } = options.app.history;
+          const { majorThreshold } = options.history;
           const dataKey = primaryCurrency + secondaryCurrency + exchange;
           const percentageChange = utility.fixed((Math.abs(currentLastPrice - previousLastPrice) / previousLastPrice), 8) * 100;
           let symbol;
@@ -170,36 +185,36 @@ const writeToStdout = (limitReached, priceData, allowance) => {
           // Determine history symbol
           if (percentageChange > majorThreshold) {
             symbol = currentLastPrice > previousLastPrice
-              ? options.app.history.positiveMajorSymbol
-              : options.app.history.negativeMajorSymbol;
+              ? options.history.positiveMajorSymbol
+              : options.history.negativeMajorSymbol;
           } else {
             symbol = currentLastPrice > previousLastPrice
-              ? options.app.history.positiveMinorSymbol
-              : options.app.history.negativeMinorSymbol;
+              ? options.history.positiveMinorSymbol
+              : options.history.negativeMinorSymbol;
           }
 
-          priceDataHistory[dataKey] = priceDataHistory[dataKey] || new Array(options.app.history.length).fill(' ');
+          priceDataHistory[dataKey] = priceDataHistory[dataKey] || new Array(options.history.length).fill(' ');
 
           if (
             currentLastPrice > previousLastPrice
-            && utility.fixed(currentLastPrice - previousLastPrice, 6) > options.app.history.minorThreshold
+            && utility.fixed(currentLastPrice - previousLastPrice, 6) > options.history.minorThreshold
           ) {
             // Price has increased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.green.bold(symbol));
           } else if (
             currentLastPrice < previousLastPrice
-            && utility.fixed(previousLastPrice - currentLastPrice, 6) > options.app.history.minorThreshold
+            && utility.fixed(previousLastPrice - currentLastPrice, 6) > options.history.minorThreshold
           ) {
             // Price has decreased since last update and was greater than threshold
             priceDataHistory[dataKey].push(colors.red.bold(symbol));
           } else {
-            priceDataHistory[dataKey].push(retrievalError ? ' ' : colors.grey(options.app.history.neutralSymbol));
+            priceDataHistory[dataKey].push(retrievalError ? ' ' : colors.grey(options.history.neutralSymbol));
           }
 
           historyChangeOutput = currentLastPrice - previousLastPrice;
 
           // Format history output, set precision based on amount
-          if (historyChangeOutput === 0 || options.app.history.hideAmount) {
+          if (historyChangeOutput === 0 || options.history.hideAmount) {
             historyChangeOutput = '';
           } else if (historyChangeOutput > 0) {
             if (historyChangeOutput >= 1) {
@@ -222,7 +237,7 @@ const writeToStdout = (limitReached, priceData, allowance) => {
         }
 
         // eslint-disable-next-line prefer-template, no-useless-concat, max-len
-        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + pad(10, lastPriceValue) + ' ' + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.app.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
+        process.stdout.write(primaryCurrencyOutput + secondaryCurrencyOutput + exchangeOutput + pad(10, lastPriceValue) + ' ' + changeOutput + ` ${(priceDataHistory[primaryCurrency + secondaryCurrency + exchange] || '') && priceDataHistory[primaryCurrency + secondaryCurrency + exchange].slice(-1 * options.history.length).join('')}` + ` ${colors.grey(historyChangeOutput)}` + '\n');
       });
 
       process.stdout.write('\n');
@@ -245,8 +260,9 @@ const retrieveMarketData = () => {
   const primaryCurrencies = [];
   const secondaryCurrencies = [];
   const exchanges = [];
+  const apiKeyString = options.apiKey ? `?apikey=${options.apiKey}` : '';
 
-  needle.get('https://api.cryptowat.ch/markets/summaries', (error, response) => {
+  needle.get(`https://api.cryptowat.ch/markets/summaries${apiKeyString}`, (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {
@@ -310,7 +326,9 @@ const retrieveMarketData = () => {
 
 // Retrieve exchange information from endpoint
 const retrieveExchangeData = () => {
-  needle.get('https://api.cryptowat.ch/exchanges', (error, response) => {
+  const apiKeyString = options.apiKey ? `?apikey=${options.apiKey}` : '';
+
+  needle.get(`https://api.cryptowat.ch/exchanges${apiKeyString}`, (error, response) => {
     const body = response && response.body;
 
     if (!error && body && response.statusCode === 200) {
@@ -320,12 +338,12 @@ const retrieveExchangeData = () => {
 
       setInterval(() => {
         retrieveMarketData();
-      }, options.app.pollInterval);
+      }, options.pollInterval);
 
       return retrieveMarketData();
     }
 
-    if (response && response.statuscode === 429) {
+    if (response && response.statusCode === 429) {
       return writeToStdout(true);
     }
 
@@ -334,7 +352,7 @@ const retrieveExchangeData = () => {
     // Retry on connection failure
     return setTimeout(() => {
       retrieveExchangeData();
-    }, options.app.pollInterval);
+    }, options.pollInterval);
   });
 };
 

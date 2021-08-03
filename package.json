@@ -40,15 +40,15 @@
   },
   "dependencies": {
     "colors": "^1.4.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "needle": "^2.5.2",
+    "needle": "^2.8.0",
     "pad": "^3.2.0",
-    "yargs": "^16.2.0"
+    "yargs": "^17.0.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
-    "eslint-plugin-import": "^2.22.1"
+    "eslint-plugin-import": "^2.23.4"
   }
 }

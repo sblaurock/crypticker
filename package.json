@@ -44,11 +44,11 @@
     "moment": "^2.29.1",
     "needle": "^2.8.0",
     "pad": "^3.2.0",
-    "yargs": "^17.0.1"
+    "yargs": "^17.1.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
-    "eslint-plugin-import": "^2.23.4"
+    "eslint-plugin-import": "^2.24.1"
   }
 }

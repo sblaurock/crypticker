@@ -9,7 +9,7 @@
       "version": "1.6.2",
       "license": "MIT",
       "dependencies": {
-        "colors": "^1.4.0",
+        "colors": "1.4.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
         "needle": "^2.9.1",

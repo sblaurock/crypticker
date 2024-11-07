@@ -3,6 +3,11 @@
 [![npm](https://img.shields.io/npm/l/crypticker.svg)](https://www.npmjs.com/package/crypticker)
 [![npm](https://img.shields.io/npm/dm/crypticker.svg)](https://www.npmjs.com/package/crypticker)
 
+> [!WARNING]  
+> **This project is no longer actively maintained and the application is not functional**, as the [Cryptowatch API has been sunset](https://blog.kraken.com/product/cryptowatch-to-sunset-kraken-pro-to-integrate-cryptowatch-features).
+
+---
+
 Command line cryptocurrency price ticker for Bitcoin, Ethereum, and more.
 
 ![screenshot](https://github.com/sblaurock/crypticker/raw/master/screenshot.png "Example screenshot of ticker.")
